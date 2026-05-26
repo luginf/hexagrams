@@ -24,6 +24,11 @@ wish hexagrams.tcl &
 | Mutation panel | Shows the resulting hexagram after applying all mutations; label is clickable |
 | Click mutation label (nav mode) | Navigates to mutation result; same mutation positions now point back to origin |
 | Trigram canvas | Two framed blocks aligned with upper/lower trigrams |
+| ☰ → Aléatoire | All 6 lines become faint dotted placeholders; coin panel appears below info |
+| Coin panel: click Lancer | 3 coins drawn (outline=pile/P, filled=face/F); one line fills from bottom up |
+| Repeated clicks | Each toss fills the next line; old yang/yin show mutation markers automatically |
+| After 6th toss | Button disables; "Terminé ✓"; panel hides after 2 s |
+| ☰ → Réinitialiser during toss | Coin panel hides immediately, all lines reset to yang |
 | ☰ → Hexagramme → ☷ Terre → ☰ Ciel | Navigates to hexagram 11; mutations cleared |
 | ☰ → Par numéro… | Modal dialog with slider (1–64) + spinbox; slider and spinbox stay in sync |
 | Par numéro dialog: drag slider | Spinbox updates; OK navigates to chosen hexagram |

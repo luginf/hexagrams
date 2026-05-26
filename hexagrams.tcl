@@ -127,12 +127,21 @@ array set ui_labels {
     fr,theme     "Thème"
     en,theme     "Theme"
     zh,theme     "主题"
+    fr,random    "Aléatoire"
+    en,random    "Random"
+    zh,random    "随机"
+    fr,toss      "Lancer"
+    en,toss      "Toss"
+    zh,toss      "掷"
 }
 
 # --- Visibilité ---
 set ::show_trigrams  1
 set ::show_info      1
 set ::mut_nav_mode   1  ;# 0=remplacer  1=naviguer ↔
+set ::rand_line       0  ;# 0=inactif, 1..6=prochaine ligne à tirer
+set ::rand_last_coins {} ;# dernier résultat pour redessiner sur changement de thème
+set ::rand_last_sum   0
 
 # ==========================================================================
 # PERSISTANCE (.ini)
@@ -217,7 +226,7 @@ proc load_hexagrams {} {
 # ==========================================================================
 proc y_of {n} { expr {54 + (6 - $n) * 44} }
 
-proc _draw_hexagram_on {c lv mv} {
+proc _draw_hexagram_on {c lv mv {blank_from 0}} {
     array set l $lv
     array set m $mv
     $c delete all
@@ -226,6 +235,13 @@ proc _draw_hexagram_on {c lv mv} {
         -fill [T sep] -width 1 -dash {6 3}
     for {set i 1} {$i <= 6} {incr i} {
         set y [y_of $i]
+        $c create text 13 $y -text $i \
+            -font {Helvetica 9} -fill [T fg2]
+        if {$blank_from > 0 && $i >= $blank_from} {
+            $c create line 32 $y 228 $y \
+                -width 1 -fill [T fg2] -dash {3 6} -capstyle butt
+            continue
+        }
         if {$l($i)} {
             $c create line 32 $y 228 $y \
                 -width 14 -fill [T line] -capstyle butt
@@ -235,8 +251,6 @@ proc _draw_hexagram_on {c lv mv} {
             $c create line 152 $y 228 $y \
                 -width 14 -fill [T line] -capstyle butt
         }
-        $c create text 13 $y -text $i \
-            -font {Helvetica 9} -fill [T fg2]
         if {$m($i)} {
             set cx 130
             if {$l($i)} {
@@ -260,7 +274,8 @@ proc _draw_hexagram_on {c lv mv} {
 
 proc draw_hexagram {} {
     global lines mutations
-    _draw_hexagram_on .right.mid.c [array get lines] [array get mutations]
+    set bf [expr {$::rand_line > 0 ? $::rand_line : 0}]
+    _draw_hexagram_on .right.mid.c [array get lines] [array get mutations] $bf
 }
 
 proc get_hexagram {} {
@@ -498,6 +513,132 @@ proc ask_hexagram_num {} {
 }
 
 # ==========================================================================
+# LANCER DES PIÈCES (tirage aléatoire)
+# ==========================================================================
+# pile = 2 (yin), face = 3 (yang) — méthode traditionnelle des 3 pièces
+# Sommes : 6=vieux yin (mut), 7=jeune yang, 8=jeune yin, 9=vieux yang (mut)
+
+proc line_type_desc {sum} {
+    global lang
+    switch $sum {
+        6 { return [expr {$lang eq "fr" ? "6 · vieux yin"  : ($lang eq "zh" ? "6·老阴" : "6 · old yin")}] }
+        7 { return [expr {$lang eq "fr" ? "7 · jeune yang" : ($lang eq "zh" ? "7·少阳" : "7 · young yang")}] }
+        8 { return [expr {$lang eq "fr" ? "8 · jeune yin"  : ($lang eq "zh" ? "8·少阴" : "8 · young yin")}] }
+        9 { return [expr {$lang eq "fr" ? "9 · vieux yang" : ($lang eq "zh" ? "9·老阳" : "9 · old yang")}] }
+        default { return "" }
+    }
+}
+
+proc draw_coin_canvas {coins} {
+    global lang
+    set c .left.coins.top.c
+    $c delete all
+    set cy 15
+    set i 0
+    foreach val $coins {
+        set cx [expr {15 + $i * 30}]
+        set lbl [expr {$val == 2 \
+            ? ($lang eq "zh" ? "字" : ($lang eq "en" ? "T" : "P")) \
+            : ($lang eq "zh" ? "花" : ($lang eq "en" ? "H" : "F"))}]
+        if {$val == 3} {
+            $c create oval \
+                [expr {$cx-11}] [expr {$cy-11}] \
+                [expr {$cx+11}] [expr {$cy+11}] \
+                -fill [T accent] -outline [T accent]
+            $c create text $cx $cy -text $lbl \
+                -fill [T bg] -font {Helvetica 8 bold} -anchor center
+        } else {
+            $c create oval \
+                [expr {$cx-11}] [expr {$cy-11}] \
+                [expr {$cx+11}] [expr {$cy+11}] \
+                -fill [T bg_left] -outline [T accent] -width 2
+            $c create text $cx $cy -text $lbl \
+                -fill [T accent] -font {Helvetica 8 bold} -anchor center
+        }
+        incr i
+    }
+}
+
+proc update_coins_ui {coins sum} {
+    global lang
+    set ::rand_last_coins $coins
+    set ::rand_last_sum   $sum
+    draw_coin_canvas $coins
+    if {$sum > 0} {
+        .left.coins.top.sum configure -text [line_type_desc $sum]
+    } else {
+        .left.coins.top.sum configure -text ""
+    }
+    if {$::rand_line > 6} {
+        set done [expr {$lang eq "fr" ? "Terminé ✓" \
+                      : ($lang eq "zh" ? "完成 ✓" : "Done ✓")}]
+        .left.coins.prog configure -text $done
+    } else {
+        set n $::rand_line
+        set prog [expr {$lang eq "fr" ? "Ligne $n / 6" \
+                      : ($lang eq "zh" ? "第${n}爻" : "Line $n / 6")}]
+        .left.coins.prog configure -text $prog
+    }
+}
+
+proc hide_coins_panel {} {
+    set ::rand_line       0
+    set ::rand_last_coins {}
+    set ::rand_last_sum   0
+    catch { pack forget .left.coins }
+    apply_info_visibility
+}
+
+proc start_random {} {
+    global lines mutations lang ui_labels
+    for {set i 1} {$i <= 6} {incr i} {
+        set lines($i)     0
+        set mutations($i) 0
+    }
+    set ::rand_line 1
+    set ::rand_last_coins {}
+    set ::rand_last_sum   0
+    refresh
+    if {[winfo manager .left] eq ""} {
+        pack .left -side left -fill both -padx {12 4} -pady 12 -before .right
+        pack .sep  -side left -fill y    -pady 8       -before .right
+    }
+    if {[winfo manager .left.coins] eq ""} {
+        pack .left.coins -fill x -padx 12 -pady {4 10}
+    }
+    .left.coins.top.btn configure \
+        -text $ui_labels($lang,toss) -state normal
+    update_coins_ui {} 0
+}
+
+proc toss_coins {} {
+    global lines mutations
+    if {$::rand_line < 1 || $::rand_line > 6} return
+    expr {srand([clock clicks])}
+    set coins {}
+    set sum 0
+    for {set i 0} {$i < 3} {incr i} {
+        set v [expr {int(rand() * 2) == 0 ? 2 : 3}]
+        lappend coins $v
+        incr sum $v
+    }
+    set n $::rand_line
+    switch $sum {
+        6 { set lines($n) 0; set mutations($n) 1 }
+        7 { set lines($n) 1; set mutations($n) 0 }
+        8 { set lines($n) 0; set mutations($n) 0 }
+        9 { set lines($n) 1; set mutations($n) 1 }
+    }
+    incr ::rand_line
+    update_coins_ui $coins $sum
+    refresh
+    if {$::rand_line > 6} {
+        .left.coins.top.btn configure -state disabled
+        after 2000 hide_coins_panel
+    }
+}
+
+# ==========================================================================
 # MUTATION
 # ==========================================================================
 proc get_mutated_lines {} {
@@ -642,6 +783,17 @@ proc apply_theme {{theme ""}} {
     .mut.mid.tri    configure -bg [T bg]
     .mut.num        configure -bg [T bg] -fg [T accent]
 
+    catch {
+        .left.coins         configure -bg [T bg_left]
+        .left.coins.top     configure -bg [T bg_left]
+        .left.coins.top.btn configure -bg [T btn_bg] -fg [T btn_fg] \
+            -activebackground [T sep] -activeforeground [T fg] -relief flat
+        .left.coins.top.c   configure -bg [T bg_left]
+        .left.coins.top.sum configure -bg [T bg_left] -fg [T fg2]
+        .left.coins.prog    configure -bg [T bg_left] -fg [T fg2]
+        draw_coin_canvas $::rand_last_coins
+    }
+
     draw_hexagram
     draw_trigrams
     if {[has_mutations]} { refresh_mutation_panel }
@@ -654,28 +806,42 @@ proc apply_theme {{theme ""}} {
 # ==========================================================================
 proc update_ui_labels {} {
     global lang ui_labels
-    set h [get_hexagram]
-    .right.num configure -text "$ui_labels($lang,hexagram)  $h"
-    # Indices : 0=HexNav 1=ParNuméro 2=sep 3=Trigr 4=Info 5=MutNav
-    #           6=sep 7=Reset 8=sep 9=Langue 10=Thème(end)
+    if {$::rand_line > 0 && $::rand_line <= 6} {
+        .right.num configure -text ""
+    } else {
+        set h [get_hexagram]
+        .right.num configure -text "$ui_labels($lang,hexagram)  $h"
+    }
+    # Indices : 0=HexNav 1=ParNuméro 2=sep 3=Random 4=Reset
+    #           5=sep 6=Trigr 7=Info 8=MutNav
+    #           9=sep 10=Langue 11=Thème(end)
     catch {
         set lang_label [expr {$lang eq "fr" ? "Langue" \
                             : ($lang eq "zh" ? "语言" : "Language")}]
         .topbar.mb.m entryconfigure 0   -label $ui_labels($lang,hex_nav)
         .topbar.mb.m entryconfigure 1   -label $ui_labels($lang,goto_num)
-        .topbar.mb.m entryconfigure 3   -label $ui_labels($lang,trigrams)
-        .topbar.mb.m entryconfigure 4   -label $ui_labels($lang,show_info)
-        .topbar.mb.m entryconfigure 5   -label $ui_labels($lang,mut_nav)
-        .topbar.mb.m entryconfigure 7   -label $ui_labels($lang,reset)
-        .topbar.mb.m entryconfigure 9   -label $lang_label
+        .topbar.mb.m entryconfigure 3   -label $ui_labels($lang,random)
+        .topbar.mb.m entryconfigure 4   -label $ui_labels($lang,reset)
+        .topbar.mb.m entryconfigure 6   -label $ui_labels($lang,trigrams)
+        .topbar.mb.m entryconfigure 7   -label $ui_labels($lang,show_info)
+        .topbar.mb.m entryconfigure 8   -label $ui_labels($lang,mut_nav)
+        .topbar.mb.m entryconfigure 10  -label $lang_label
         .topbar.mb.m entryconfigure end -label $ui_labels($lang,theme)
+    }
+    if {[winfo manager .left.coins] ne ""} {
+        .left.coins.top.btn configure -text $ui_labels($lang,toss)
+        update_coins_ui $::rand_last_coins $::rand_last_sum
     }
 }
 
 proc refresh {} {
     draw_hexagram
     draw_trigrams
-    update_info [get_hexagram]
+    if {$::rand_line > 0 && $::rand_line <= 6} {
+        _update_info_widget .left.txt 0
+    } else {
+        update_info [get_hexagram]
+    }
     update_ui_labels
     update_mutation_visibility
 }
@@ -712,6 +878,7 @@ proc reset_all {} {
         set lines($i)     1
         set mutations($i) 0
     }
+    hide_coins_panel
     refresh
 }
 
@@ -741,8 +908,8 @@ label .topbar.title -text "Yi Jing" -font {Helvetica 13} -padx 12 -pady 6
 pack .topbar.title -side left
 
 # Menu sandwich ☰
-# Indices : 0=Langue 1=Thème 2=sep 3=ParNuméro 4=HexNav 5=sep
-#           6=Trigrammes 7=Panneau 8=sep 9=Reset
+# Indices : 0=HexNav 1=ParNuméro 2=sep 3=Random 4=Reset
+#           5=sep 6=Trigr 7=Info 8=MutNav 9=sep 10=Langue 11=Thème
 menubutton .topbar.mb -text "☰" -font {Helvetica 15} \
     -relief flat -padx 10 -pady 4 -cursor hand2
 pack .topbar.mb -side right -padx 4
@@ -764,36 +931,39 @@ for {set _lo 0} {$_lo <= 7} {incr _lo} {
 
 .topbar.mb.m add separator                                               ;# 2
 
+.topbar.mb.m add command -label "Aléatoire" \
+    -command start_random                                                ;# 3
+.topbar.mb.m add command -label "Réinitialiser" -command reset_all      ;# 4
+
+.topbar.mb.m add separator                                               ;# 5
+
 # Toggles d'affichage
 .topbar.mb.m add checkbutton -label "Trigrammes" \
     -variable ::show_trigrams -onvalue 1 -offvalue 0 \
-    -command apply_trigrams_visibility                                   ;# 3
+    -command apply_trigrams_visibility                                   ;# 6
 
 .topbar.mb.m add checkbutton -label "Panneau d'informations" \
     -variable ::show_info -onvalue 1 -offvalue 0 \
-    -command apply_info_visibility                                       ;# 4
+    -command apply_info_visibility                                       ;# 7
 
 .topbar.mb.m add checkbutton -label "Mutation ↔ naviguer" \
     -variable ::mut_nav_mode -onvalue 1 -offvalue 0 \
-    -command save_ini                                                    ;# 5
+    -command save_ini                                                    ;# 8
 
-.topbar.mb.m add separator                                               ;# 6
-.topbar.mb.m add command -label "Reset" -command reset_all              ;# 7
-
-.topbar.mb.m add separator                                               ;# 8
+.topbar.mb.m add separator                                               ;# 9
 
 # Langue et Thème en bas
 menu .topbar.mb.m.lang -tearoff 0
 .topbar.mb.m.lang add command -label "Français" -command {set_lang fr}
 .topbar.mb.m.lang add command -label "English"  -command {set_lang en}
 .topbar.mb.m.lang add command -label "中文"      -command {set_lang zh}
-.topbar.mb.m add cascade -label "Langue" -menu .topbar.mb.m.lang       ;# 9
+.topbar.mb.m add cascade -label "Langue" -menu .topbar.mb.m.lang       ;# 10
 
 menu .topbar.mb.m.theme -tearoff 0
 foreach th {light dark sepia green} {
     .topbar.mb.m.theme add command -label $th -command [list apply_theme $th]
 }
-.topbar.mb.m add cascade -label "Thème" -menu .topbar.mb.m.theme       ;# 10
+.topbar.mb.m add cascade -label "Thème" -menu .topbar.mb.m.theme       ;# 11
 
 .topbar.mb configure -menu .topbar.mb.m
 
@@ -812,6 +982,24 @@ text .left.txt -width 38 -height 16 -wrap word \
     -highlightthickness 0 -state disabled \
     -padx 12 -pady 8 -cursor {}
 pack .left.txt -fill both -expand 1
+
+# ── Panneau tirage (créé mais non packé ; apparaît sur Aléatoire) ─────────
+frame .left.coins
+frame .left.coins.top
+pack .left.coins.top -fill x
+
+button .left.coins.top.btn -text "Lancer" -command toss_coins \
+    -font {Helvetica 11} -relief flat -cursor hand2 -padx 8 -pady 4
+pack .left.coins.top.btn -side left
+
+canvas .left.coins.top.c -width 92 -height 30 -highlightthickness 0
+pack .left.coins.top.c -side left -padx {8 4}
+
+label .left.coins.top.sum -text "" -font {Helvetica 10}
+pack .left.coins.top.sum -side left
+
+label .left.coins.prog -text "" -font {Helvetica 10 italic}
+pack .left.coins.prog -anchor w -padx 4 -pady {2 0}
 
 # Séparateur vertical
 frame .sep -width 1

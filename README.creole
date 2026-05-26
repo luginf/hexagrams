@@ -25,6 +25,14 @@ For CJK characters in the trigram panel: {{{sudo apt install fonts-noto-cjk}}}.
 ** Chinese character (乾 坤 震 …)
 ** Pinyin name with tones (Qián, Kūn, Zhèn …)
 ** Translation in the active language
+* **Random coin toss** — hamburger menu → Aléatoire / Random / 随机:
+** Clears the hexagram (lines show as faint dotted placeholders)
+** Reveals a coin-toss panel below the info text
+** Each click of **Lancer / Toss / 掷** rolls 3 coins and fills the next line from the bottom up
+** Pile / tails = 2, face / heads = 3 (traditional method)
+** Sum 6 = old yin ×, 7 = young yang, 8 = young yin, 9 = old yang ○
+** Each toss re-seeds the random generator from the microsecond clock — the exact moment of the click influences the result
+** Panel hides automatically after the 6th line is filled
 * **Mutation result panel** — appears automatically when changing lines are marked:
 ** Shows the resulting hexagram inline to the right
 ** Click the hexagram label to navigate to the result
@@ -116,6 +124,27 @@ When //Mutation ↔ naviguer// is unchecked, clicking the result applies the mut
 the mutated lines become the current lines and all mutation markers are cleared.
 
 Mutation markers are always cleared by Reset.
+
+== Random coin toss ==
+
+**☰ → Aléatoire** clears all six lines (shown as faint dotted placeholders) and reveals a coin
+panel below the info text.
+
+Each click of the **Lancer** button simulates three coin tosses using the traditional Yi Jing
+method: pile (tails) = 2, face (heads) = 3. The three values are summed:
+
+| Sum | Line type | Marker |
+| 6 | Old yin (老阴) | × |
+| 7 | Young yang (少阳) | — |
+| 8 | Young yin (少阴) | — |
+| 9 | Old yang (老阳) | ○ |
+
+Lines fill from the bottom up (line 1 first). The random generator is re-seeded from the
+microsecond system clock at the moment of each click, so the exact timing of the click
+influences the outcome. After the sixth line is filled, the panel hides automatically
+and the completed hexagram (with any mutation markers) remains displayed.
+
+**Reset** hides the coin panel immediately.
 
 == Hexagram navigation ==
 
