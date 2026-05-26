@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yi Jing</title>
+<style>
+/* ── Themes ───────────────────────────────────────────────────────────── */
+body {
+  --bg:#fdf6e3;--bg-left:#f5efe0;--fg:#3b2e1e;--fg2:#8a7060;
+  --sep:#c8b89a;--line:#3b2e1e;--tri-bg:#faf0d8;--tri-border:#c8b89a;
+  --accent:#7a4f28;--btn-bg:#d8c9a8;--btn-fg:#3b2e1e;
+}
+body[data-theme=light]{
+  --bg:#ffffff;--bg-left:#fafafa;--fg:#1a1a1a;--fg2:#999;
+  --sep:#ddd;--line:#1a1a1a;--tri-bg:#f9f9f9;--tri-border:#ccc;
+  --accent:#8B1A1A;--btn-bg:#ebebeb;--btn-fg:#1a1a1a;
+}
+body[data-theme=dark]{
+  --bg:#1e1e1e;--bg-left:#252525;--fg:#d4d4d4;--fg2:#666;
+  --sep:#3a3a3a;--line:#c8c8c8;--tri-bg:#2a2a2a;--tri-border:#484848;
+  --accent:#c8965a;--btn-bg:#333;--btn-fg:#d4d4d4;
+}
+body[data-theme=sepia]{
+  --bg:#fdf6e3;--bg-left:#f5efe0;--fg:#3b2e1e;--fg2:#8a7060;
+  --sep:#c8b89a;--line:#3b2e1e;--tri-bg:#faf0d8;--tri-border:#c8b89a;
+  --accent:#7a4f28;--btn-bg:#d8c9a8;--btn-fg:#3b2e1e;
+}
+body[data-theme=green]{
+  --bg:#f0f7f0;--bg-left:#e6f2e6;--fg:#1a2e1a;--fg2:#6a896a;
+  --sep:#a8c8a8;--line:#1a2e1a;--tri-bg:#e0f0e0;--tri-border:#a8c8a8;
+  --accent:#2e6e2e;--btn-bg:#c8dfc8;--btn-fg:#1a2e1a;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--fg);
+  font-family:Helvetica,Arial,sans-serif;font-size:13px;
+  display:flex;flex-direction:column;min-height:100vh;
+}
+#topbar,#menu-drop,.mi,#right,#mut,#mutsep,
+#hex-canvas,#tri-canvas,#mut-canvas,#mut-tri,
+#coins-canvas,#toss-btn,#hex-num,#mut-num,
+#coin-prog,#coin-sum{user-select:none;}
+
+/* ── Topbar ───────────────────────────────────────────────────────────── */
+#topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;background:var(--bg);position:relative;z-index:100;
+}
+#topbar-title{color:var(--fg2);font-size:13px;padding:6px 0}
+#topbar-sep{height:1px;background:var(--sep)}
+
+/* ── Menu ─────────────────────────────────────────────────────────────── */
+#menu-btn{
+  font-size:15px;cursor:pointer;padding:4px 10px;
+  background:var(--bg);color:var(--fg);border-radius:3px;
+}
+#menu-btn:hover{background:var(--sep)}
+#menu-wrap{position:relative}
+#menu-drop{
+  display:none;position:absolute;top:100%;right:0;
+  background:var(--btn-bg);color:var(--btn-fg);
+  border:1px solid var(--sep);border-radius:4px;
+  min-width:220px;box-shadow:0 4px 12px rgba(0,0,0,.18);z-index:200;
+}
+#menu-drop.open{display:block}
+.mi{
+  padding:7px 14px;cursor:pointer;position:relative;
+  display:flex;align-items:center;white-space:nowrap;
+}
+.mi:hover{background:var(--sep);color:var(--fg)}
+.mi.has-sub{justify-content:space-between}
+.mi.has-sub::after{content:"▶";font-size:10px;margin-left:8px;opacity:.7}
+.msep{height:1px;background:var(--sep);margin:2px 0}
+.sub{
+  display:none;position:absolute;top:0;right:100%;left:auto;
+  background:var(--btn-bg);color:var(--btn-fg);
+  border:1px solid var(--sep);border-radius:4px;
+  min-width:200px;max-height:340px;overflow-y:auto;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+.mi:hover>.sub{display:block}
+.chk{width:16px;display:inline-block;flex-shrink:0}
+
+/* ── Main ─────────────────────────────────────────────────────────────── */
+#main{display:flex;align-items:flex-start;padding:12px;gap:0;flex:1}
+
+/* ── Left ─────────────────────────────────────────────────────────────── */
+#left{
+  background:var(--bg-left);padding:8px 12px;
+  width:282px;flex-shrink:0;
+}
+#left.hidden{display:none}
+#info{font-size:12px;min-height:240px}
+.hex-title{
+  font-size:17px;font-weight:bold;color:var(--accent);
+  text-align:center;margin:4px 0 10px;
+}
+.hex-bold{font-size:12px;font-weight:bold;text-align:center;margin-bottom:6px}
+.hex-italic{font-size:12px;font-style:italic;color:var(--fg2);text-align:center}
+
+/* ── Coins ────────────────────────────────────────────────────────────── */
+#coins{display:none;margin-top:12px}
+#coins-row{display:flex;align-items:center;gap:8px}
+#toss-btn{
+  background:var(--btn-bg);color:var(--btn-fg);border:none;
+  cursor:pointer;padding:4px 10px;font-size:11px;
+  font-family:inherit;border-radius:3px;
+}
+#toss-btn:hover{background:var(--sep)}
+#toss-btn:disabled{opacity:.4;cursor:default}
+#coins-sum{font-size:10px;color:var(--fg2)}
+#coins-progress{font-size:10px;font-style:italic;color:var(--fg2);margin-top:2px}
+
+/* ── Vsep ─────────────────────────────────────────────────────────────── */
+#vsep{width:1px;background:var(--sep);align-self:stretch;flex-shrink:0}
+#vsep.hidden{display:none}
+
+/* ── Right ────────────────────────────────────────────────────────────── */
+#right{display:flex;flex-direction:column;align-items:center;padding:10px 12px;flex-shrink:0}
+#right-mid{display:flex}
+#hex-canvas{cursor:pointer;display:block}
+#tri-canvas{display:block;margin-left:4px}
+#tri-canvas.hidden{display:none}
+#hex-num{font-size:22px;font-weight:bold;color:var(--accent);margin:4px 0 14px;min-height:28px}
+
+/* ── Mut panel ────────────────────────────────────────────────────────── */
+#mutsep{width:1px;background:var(--sep);align-self:stretch;flex-shrink:0}
+#mutsep.hidden{display:none}
+#mut{display:flex;flex-direction:column;align-items:center;padding:10px 12px;flex-shrink:0}
+#mut.hidden{display:none}
+#mut-mid{display:flex}
+#mut-canvas{display:block}
+#mut-tri{display:block;margin-left:4px}
+#mut-tri.hidden{display:none}
+#mut-num{
+  font-size:14px;font-weight:bold;color:var(--accent);
+  margin:4px 0 14px;cursor:pointer;min-height:20px;
+}
+#mut-num:hover{text-decoration:underline}
+#mut-mode-btn{
+  background:var(--btn-bg);color:var(--btn-fg);border:none;
+  cursor:pointer;padding:4px 14px;font-size:13px;
+  font-family:inherit;border-radius:3px;margin-bottom:8px;
+  display:none;
+}
+#mut-mode-btn.visible{display:inline-block}
+#mut-mode-btn.active{background:var(--accent);color:var(--bg)}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media(max-width:650px){
+  #main{flex-direction:column;align-items:stretch}
+  #left{width:auto}
+  #vsep{width:auto;height:1px;align-self:auto}
+  #mutsep{width:auto;height:1px;align-self:auto}
+  #right,#mut{align-self:center}
+}
+
+/* ── Number dialog ────────────────────────────────────────────────────── */
+#overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.3);z-index:300;
+  align-items:center;justify-content:center;
+}
+#overlay.open{display:flex}
+#num-dlg{
+  background:var(--bg);border:1px solid var(--sep);border-radius:6px;
+  padding:20px 24px;min-width:280px;
+  display:flex;flex-direction:column;gap:10px;
+}
+#num-label{font-size:12px;text-align:center}
+#num-slider{width:100%;accent-color:var(--accent)}
+#num-spin{
+  width:80px;text-align:center;font-size:15px;font-weight:bold;
+  background:var(--btn-bg);color:var(--fg);
+  border:1px solid var(--sep);border-radius:3px;padding:3px;
+  align-self:center;font-family:inherit;
+}
+#num-btns{display:flex;gap:8px;justify-content:center}
+#about-dlg{
+  background:var(--bg);border:1px solid var(--sep);border-radius:6px;
+  padding:22px 28px;max-width:340px;text-align:center;
+  display:none;flex-direction:column;gap:10px;
+}
+#about-dlg.open{display:flex}
+#about-title{font-size:15px;font-weight:bold;color:var(--accent)}
+#about-desc{font-size:12px;color:var(--fg2);line-height:1.6}
+#about-link{font-size:12px;color:var(--accent);text-decoration:underline;cursor:pointer}
+#about-btns{display:flex;justify-content:center;margin-top:4px}
+.dbtn{
+  background:var(--btn-bg);color:var(--btn-fg);border:none;
+  cursor:pointer;padding:5px 18px;font-size:12px;
+  font-family:inherit;border-radius:3px;
+}
+.dbtn:hover{background:var(--sep)}
+</style>
+</head>
+<body data-theme="sepia">
+
+<div id="topbar">
+  <span id="topbar-title">Yi Jing</span>
+  <div id="menu-wrap">
+    <div id="menu-btn">☰</div>
+    <div id="menu-drop"></div>
+  </div>
+</div>
+<div id="topbar-sep"></div>
+
+<div id="main">
+  <div id="left">
+    <div id="info"></div>
+    <div id="coins">
+      <div id="coins-row">
+        <button id="toss-btn">Lancer</button>
+        <canvas id="coins-canvas" width="92" height="30"></canvas>
+        <span id="coins-sum"></span>
+      </div>
+      <div id="coins-progress"></div>
+    </div>
+  </div>
+  <div id="vsep"></div>
+  <div id="right">
+    <div id="right-mid">
+      <canvas id="hex-canvas" width="260" height="310"></canvas>
+      <canvas id="tri-canvas" width="100" height="310"></canvas>
+    </div>
+    <div id="hex-num"></div>
+    <button id="mut-mode-btn">○  ×</button>
+  </div>
+  <div id="mutsep" class="hidden"></div>
+  <div id="mut" class="hidden">
+    <div id="mut-mid">
+      <canvas id="mut-canvas" width="260" height="310"></canvas>
+      <canvas id="mut-tri" width="100" height="310"></canvas>
+    </div>
+    <div id="mut-num"></div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div id="num-dlg">
+    <div id="num-label"></div>
+    <input type="range" id="num-slider" min="1" max="64" value="1">
+    <input type="number" id="num-spin" min="1" max="64" value="1">
+    <div id="num-btns">
+      <button class="dbtn" id="num-ok">OK</button>
+      <button class="dbtn" id="num-cancel">Annuler</button>
+    </div>
+  </div>
+  <div id="about-dlg">
+    <div id="about-title">Yi Jing — Hexagram Identifier</div>
+    <div id="about-desc"></div>
+    <a id="about-link" href="https://github.com/luginf/hexagrams/" target="_blank">
+      github.com/luginf/hexagrams
+    </a>
+    <div id="about-btns">
+      <button class="dbtn" id="about-close"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Hex table ──────────────────────────────────────────────────────────────
+const HEX_TABLE=[
+   2,24, 7,19,15,36,46,11,
+  16,51,40,54,62,55,32,34,
+   8, 3,29,60,39,63,48, 5,
+  45,17,47,58,31,49,28,43,
+  23,27, 4,41,52,22,18,26,
+  35,21,64,38,56,30,50,14,
+  20,42,59,61,53,37,57, 9,
+  12,25, 6,10,33,13,44, 1
+];
+
+// ── Trigram data ───────────────────────────────────────────────────────────
+const TRI_PINYIN=['Kūn','Zhèn','Kǎn','Duì','Gèn','Lí','Xùn','Qián'];
+const TRI_HANZI =['坤','震','坎','兌','艮','離','巽','乾'];
+const TRI_SYM   =['☷','☳','☵','☱','☶','☲','☴','☰'];
+const TRI_NAMES ={
+  fr:['Terre','Tonnerre','Eau','Lac','Montagne','Feu','Vent','Ciel'],
+  en:['Earth','Thunder','Water','Lake','Mountain','Fire','Wind','Heaven'],
+  zh:['地','雷','水','泽','山','火','风','天']
+};
+
+// ── Hexagram data [title, bold, italic] index 1..64 ───────────────────────
+const HD={
+fr:[,
+['1. ䷀','Créativité, Ciel, Initiative','Force créatrice du ciel, commencement absolu et actif.'],
+['2. ䷁','Réceptivité, Terre, Accueil','Réception totale, soutien silencieux, fertilité et stabilité.'],
+['3. ䷂','Difficulté, Début, Chaos','Naissance difficile, organisation lente face au désordre initial.'],
+['4. ䷃','Jeunesse, Apprentissage, Ignorance','Inexpérience nécessitant guidance, discipline et apprentissage structuré.'],
+['5. ䷄','Attente, Patience, Maturation','Le moment juste arrive lentement, nécessité de patience.'],
+['6. ䷅','Conflit, Tension, Désaccord','Opposition nécessitant prudence, médiation et retenue stratégique.'],
+['7. ䷆','Armée, Discipline, Organisation','Action collective structurée pour surmonter l\'adversité efficacement.'],
+['8. ䷇','Union, Alliance, Solidarité','Cohésion harmonieuse créant stabilité et confiance mutuelle.'],
+['9. ䷈','Retenue, Progression, Petite accumulation','Avancées lentes mais sûres grâce à la maîtrise.'],
+['10. ䷉','Marche, Prudence, Conduite','Avancer avec attention évite erreurs et conflits inutiles.'],
+['11. ䷊','Harmonie, Paix, Équilibre','Forces opposées en accord, période fluide et prospère.'],
+['12. ䷋','Blocage, Stagnation, Séparation','Interruption des flux, repli nécessaire et prudent.'],
+['13. ䷌','Communauté, Fraternité, Union','Coopération autour d\'objectifs communs et sincères.'],
+['14. ䷍','Abondance, Richesse, Responsabilité','Grande possession exige sagesse et responsabilité intérieure.'],
+['15. ䷎','Modestie, Humilité, Équilibre','L\'humilité favorise stabilité, respect et croissance durable.'],
+['16. ䷏','Enthousiasme, Élan, Motivation','Énergie collective puissante stimulant action et dynamisme.'],
+['17. ䷐','Suivre, Adaptation, Flexibilité','S\'adapter intelligemment réduit résistance et conflits.'],
+['18. ䷑','Réparation, Correction, Héritage','Corriger erreurs passées restaure ordre et harmonie.'],
+['19. ䷒','Approche, Progression, Ouverture','Situation favorable arrivant progressivement avec ouverture.'],
+['20. ䷓','Contemplation, Observation, Clarté','Observer avant agir apporte compréhension profonde.'],
+['21. ䷔','Justice, Correction, Action','Intervention ferme pour rétablir ordre et équité.'],
+['22. ䷕','Grâce, Beauté, Apparence','Esthétique harmonise mais ne remplace pas l\'essentiel.'],
+['23. ䷖','Désagrégation, Effondrement, Déclin','Structures fragiles s\'effondrent progressivement naturellement.'],
+['24. ䷗','Retour, Cycle, Renouveau','Retour aux origines après rupture ou éloignement.'],
+['25. ䷘','Innocence, Sincérité, Spontanéité','Agir naturellement sans calcul favorise justesse intérieure.'],
+['26. ䷙','Puissance, Discipline, Maîtrise','Force contenue par contrôle et concentration.'],
+['27. ䷚','Nourrir, Soutien, Croissance','Ce que l\'on nourrit détermine le développement futur.'],
+['28. ䷛','Excès, Charge, Pression','Trop de poids exige changement rapide.'],
+['29. ䷜','Danger, Abîme, Risque','Traverser l\'incertitude exige vigilance et courage.'],
+['30. ䷝','Lumière, Clarté, Vision','Compréhension révélant vérité et direction.'],
+['31. ䷞','Influence, Attraction, Résonance','Relations créent transformation mutuelle subtile.'],
+['32. ䷟','Durée, Stabilité, Persistance','Continuité renforce solidité et fiabilité.'],
+['33. ䷠','Retraite, Recul, Stratégie','Se retirer préserve énergie et clarté.'],
+['34. ䷡','Force, Puissance, Énergie','Grande force exige contrôle et maîtrise.'],
+['35. ䷢','Progrès, Ascension, Reconnaissance','Avancée soutenue par visibilité et confiance.'],
+['36. ䷣','Dissimulation, Ombre, Protection','Cacher sa lumière dans contexte hostile.'],
+['37. ䷤','Famille, Ordre, Structure','Rôles équilibrés assurent harmonie durable.'],
+['38. ䷥','Opposition, Différence, Dualité','Contrastes persistants mais potentiellement complémentaires.'],
+['39. ䷦','Obstacle, Blocage, Entrave','Difficultés imposent réévaluation stratégique.'],
+['40. ䷧','Libération, Résolution, Détente','Tensions se dissolvent après clarification.'],
+['41. ䷨','Diminution, Sacrifice, Équilibre','Réduire excès restaure harmonie globale.'],
+['42. ䷩','Accroissement, Expansion, Gain','Croissance soutenue par partage et ouverture.'],
+['43. ䷪','Percée, Décision, Clarté','Moment décisif exige action ferme.'],
+['44. ䷫','Rencontre, Tentation, Influence','Influence soudaine pouvant déstabiliser ou séduire.'],
+['45. ䷬','Rassemblement, Collectif, Union','Regroupement autour d\'un centre commun.'],
+['46. ䷭','Ascension, Croissance, Progression','Montée lente mais constante vers sommet.'],
+['47. ䷮','Oppression, Épuisement, Limite','Contraintes testent endurance et patience.'],
+['48. ䷯','Ressource, Source, Profondeur','Accès à une source durable essentielle.'],
+['49. ䷰','Révolution, Changement, Transformation','Mutation radicale remplaçant ancien système.'],
+['50. ䷱','Chaudron, Transformation, Sagesse','Alchimie intérieure produit évolution profonde.'],
+['51. ䷲','Tonnerre, Choc, Réveil','Événement soudain provoque prise de conscience.'],
+['52. ䷳','Immobilité, Calme, Méditation','Arrêt volontaire stabilise esprit.'],
+['53. ䷴','Maturation, Développement, Progression','Croissance lente menant à stabilité.'],
+['54. ䷵','Dépendance, Union, Fragilité','Position instable nécessitant adaptation prudente.'],
+['55. ䷶','Abondance, Sommet, Intensité','Apogée précédant inévitable transformation.'],
+['56. ䷷','Voyage, Passage, Instabilité','Situation temporaire demandant souplesse.'],
+['57. ䷸','Influence, Douceur, Persuasion','Action subtile transforme progressivement.'],
+['58. ䷹','Joie, Échange, Communication','Ouverture favorise harmonie relationnelle.'],
+['59. ䷺','Dispersion, Dissolution, Flux','Dissolution des blocages et rigidités.'],
+['60. ䷻','Limite, Cadre, Mesure','Les règles structurent liberté efficace.'],
+['61. ䷼','Sincérité, Vérité, Intériorité','Authenticité profonde crée confiance durable.'],
+['62. ䷽','Détail, Prudence, Précision','Attention aux petites choses essentielles.'],
+['63. ䷾','Accomplissement, Équilibre, Fragilité','Succès atteint mais instable.'],
+['64. ䷿','Transition, Inachèvement, Mouvement','Fin d\'un cycle, début d\'un autre.']
+],
+en:[,
+['1. ䷀','Creativity, Heaven, Initiative','Creative force of heaven, absolute and active beginning.'],
+['2. ䷁','Receptivity, Earth, Welcome','Total receptivity, silent support, fertility and stability.'],
+['3. ䷂','Difficulty, Beginning, Chaos','Difficult birth, slow organisation amid initial disorder.'],
+['4. ䷃','Youth, Learning, Ignorance','Inexperience requiring guidance, discipline and structured learning.'],
+['5. ䷄','Waiting, Patience, Ripening','The right moment comes slowly; patience is essential.'],
+['6. ䷅','Conflict, Tension, Disagreement','Opposition requiring prudence, mediation and strategic restraint.'],
+['7. ䷆','Army, Discipline, Organisation','Structured collective action to overcome adversity effectively.'],
+['8. ䷇','Union, Alliance, Solidarity','Harmonious cohesion creating stability and mutual trust.'],
+['9. ䷈','Restraint, Progression, Small Accumulation','Slow but sure advances through mastery and care.'],
+['10. ䷉','Treading, Prudence, Conduct','Moving carefully avoids unnecessary errors and conflicts.'],
+['11. ䷊','Harmony, Peace, Balance','Opposing forces in accord, a fluid and prosperous period.'],
+['12. ䷋','Obstruction, Stagnation, Separation','Interruption of flow; necessary and cautious withdrawal.'],
+['13. ䷌','Community, Fellowship, Union','Cooperation around common and sincere objectives.'],
+['14. ䷍','Abundance, Wealth, Responsibility','Great possession demands wisdom and inner responsibility.'],
+['15. ䷎','Modesty, Humility, Balance','Humility fosters stability, respect and lasting growth.'],
+['16. ䷏','Enthusiasm, Momentum, Motivation','Powerful collective energy stimulating action and dynamism.'],
+['17. ䷐','Following, Adaptation, Flexibility','Adapting intelligently reduces resistance and conflicts.'],
+['18. ䷑','Repair, Correction, Legacy','Correcting past errors restores order and harmony.'],
+['19. ䷒','Approach, Progression, Openness','Favourable situation arriving progressively with openness.'],
+['20. ䷓','Contemplation, Observation, Clarity','Observing before acting brings deep understanding.'],
+['21. ䷔','Justice, Correction, Action','Firm intervention to restore order and equity.'],
+['22. ䷕','Grace, Beauty, Appearance','Aesthetics harmonise but do not replace what is essential.'],
+['23. ䷖','Splitting Apart, Collapse, Decline','Fragile structures progressively crumble by themselves.'],
+['24. ䷗','Return, Cycle, Renewal','Return to origins after rupture or distance.'],
+['25. ䷘','Innocence, Sincerity, Spontaneity','Acting naturally without calculation fosters inner correctness.'],
+['26. ䷙','Power, Discipline, Mastery','Force contained by control and concentration.'],
+['27. ䷚','Nourishment, Support, Growth','What one nourishes determines future development.'],
+['28. ䷛','Excess, Burden, Pressure','Too much weight demands rapid change.'],
+['29. ䷜','Danger, Abyss, Risk','Crossing uncertainty demands vigilance and courage.'],
+['30. ䷝','Light, Clarity, Vision','Understanding revealing truth and direction.'],
+['31. ䷞','Influence, Attraction, Resonance','Relationships create subtle mutual transformation.'],
+['32. ䷟','Duration, Stability, Persistence','Continuity strengthens solidity and reliability.'],
+['33. ䷠','Retreat, Withdrawal, Strategy','Withdrawing preserves energy and clarity.'],
+['34. ䷡','Great Power, Strength, Energy','Great strength demands control and mastery.'],
+['35. ䷢','Progress, Ascent, Recognition','Advance supported by visibility and confidence.'],
+['36. ䷣','Concealment, Shadow, Protection','Hiding one\'s light in a hostile context.'],
+['37. ䷤','Family, Order, Structure','Balanced roles ensure lasting harmony.'],
+['38. ䷥','Opposition, Difference, Duality','Persistent contrasts but potentially complementary.'],
+['39. ䷦','Obstacle, Blockage, Hindrance','Difficulties impose strategic reassessment.'],
+['40. ䷧','Liberation, Resolution, Release','Tensions dissolve after clarification.'],
+['41. ䷨','Decrease, Sacrifice, Balance','Reducing excess restores global harmony.'],
+['42. ䷩','Increase, Expansion, Gain','Growth sustained by sharing and openness.'],
+['43. ䷪','Breakthrough, Decision, Clarity','Decisive moment demands firm action.'],
+['44. ䷫','Encounter, Temptation, Influence','Sudden influence that can unsettle or seduce.'],
+['45. ䷬','Gathering, Collective, Union','Regrouping around a common centre.'],
+['46. ䷭','Ascent, Growth, Progression','Slow but constant rise toward the summit.'],
+['47. ䷮','Oppression, Exhaustion, Limit','Constraints test endurance and patience.'],
+['48. ䷯','Resource, Source, Depth','Access to an essential and lasting source.'],
+['49. ䷰','Revolution, Change, Transformation','Radical mutation replacing the old system.'],
+['50. ䷱','The Cauldron, Transformation, Wisdom','Inner alchemy produces deep evolution.'],
+['51. ䷲','Thunder, Shock, Awakening','Sudden event provokes awakening of consciousness.'],
+['52. ䷳','Stillness, Calm, Meditation','Voluntary stillness stabilises the mind.'],
+['53. ䷴','Ripening, Development, Progression','Slow growth leading to stability.'],
+['54. ䷵','Dependence, Union, Fragility','Unstable position requiring prudent adaptation.'],
+['55. ䷶','Abundance, Summit, Intensity','Apex preceding inevitable transformation.'],
+['56. ䷷','Wandering, Passage, Instability','Temporary situation demanding flexibility.'],
+['57. ䷸','Influence, Gentleness, Persuasion','Subtle action progressively transforms.'],
+['58. ䷹','Joy, Exchange, Communication','Openness fosters relational harmony.'],
+['59. ䷺','Dispersion, Dissolution, Flow','Dissolution of blockages and rigidities.'],
+['60. ䷻','Limitation, Framework, Measure','Rules structure effective freedom.'],
+['61. ䷼','Sincerity, Truth, Inwardness','Deep authenticity creates lasting trust.'],
+['62. ䷽','Detail, Prudence, Precision','Attention to small but essential things.'],
+['63. ䷾','Completion, Balance, Fragility','Success achieved but unstable.'],
+['64. ䷿','Transition, Incompletion, Movement','End of one cycle, beginning of another.']
+],
+zh:[,
+['1. ䷀ 乾','创造，天，主动','天之创造力，万物之始，纯阳至刚。'],
+['2. ䷁ 坤','接受，地，包容','坤顺包容，无声支撑，柔而不弱。'],
+['3. ䷂ 屯','艰难，初始，混沌','万物初生，秩序未成，需耐心应对。'],
+['4. ䷃ 蒙','蒙昧，启蒙，学习','蒙昧待教，循序渐进，自知方悟。'],
+['5. ䷄ 需','等待，耐心，时机','时机未至，静待滋养，顺势而为。'],
+['6. ䷅ 讼','争讼，冲突，对立','意见相左，须谨慎调解，避免激化。'],
+['7. ䷆ 师','军队，纪律，组织','众志成城，有序行动，以克困境。'],
+['8. ䷇ 比','亲比，联合，团结','和谐相辅，信任互助，共建稳固。'],
+['9. ䷈ 小畜','小积，节制，渐进','循序积累，稳步前行，克制有方。'],
+['10. ䷉ 履','履行，谨慎，行为','步步为营，谨慎处世，免生祸端。'],
+['11. ䷊ 泰','泰和，和平，均衡','阴阳调和，诸事顺畅，欣欣向荣。'],
+['12. ䷋ 否','闭塞，停滞，隔断','气机受阻，需沉潜退守，以待时机。'],
+['13. ䷌ 同人','同人，共同体，合作','同心协力，众志成城，志同道合。'],
+['14. ䷍ 大有','大有，丰盛，责任','盛大所有，需以智慧承担责任。'],
+['15. ䷎ 谦','谦逊，谦虚，平和','谦谦君子，处世有道，稳健持久。'],
+['16. ䷏ 豫','豫乐，热情，激励','众志激扬，动力充沛，催人奋进。'],
+['17. ䷐ 随','随顺，适应，灵活','随机应变，柔顺处世，化解阻力。'],
+['18. ䷑ 蛊','整治，纠错，传承','修正旧弊，重建秩序，承前启后。'],
+['19. ䷒ 临','临近，进展，开放','时机渐至，以开放之心顺势而进。'],
+['20. ䷓ 观','观察，沉思，洞察','静观其变，深思熟虑，洞见本质。'],
+['21. ䷔ 噬嗑','咬合，纠正，行动','果断纠偏，正本清源，以正视听。'],
+['22. ䷕ 贲','文饰，优雅，外表','文质彬彬，外表和谐，然勿失根本。'],
+['23. ䷖ 剥','剥落，崩解，衰退','脆弱之物，渐次剥落，自然消解。'],
+['24. ䷗ 复','复归，循环，更新','一阳来复，归于本源，重焕生机。'],
+['25. ䷘ 无妄','无妄，纯真，自然','率性而为，不计得失，自然合道。'],
+['26. ䷙ 大畜','大积，自律，掌控','蓄势待发，以律制力，厚积薄发。'],
+['27. ䷚ 颐','颐养，滋养，成长','所养者决定所成，慎择所育。'],
+['28. ䷛ 大过','大过，过剩，重压','负重过甚，亟需变通，力求化解。'],
+['29. ䷜ 坎','险陷，深渊，危机','险境当前，需保持警觉，勇渡难关。'],
+['30. ䷝ 离','光明，清晰，洞见','明照万物，揭示真相，指引方向。'],
+['31. ䷞ 咸','感应，吸引，共鸣','相互感应，彼此化育，妙不可言。'],
+['32. ䷟ 恒','恒久，稳固，持续','持之以恒，根基稳固，坚不可摧。'],
+['33. ䷠ 遁','遁退，退避，策略','审时度势，适时退避，保全元气。'],
+['34. ䷡ 大壮','大壮，力量，气势','刚健有力，需以礼制，方得善果。'],
+['35. ䷢ 晋','晋升，进步，彰显','顺势上进，获得认可，信心倍增。'],
+['36. ䷣ 明夷','明夷，隐匿，自保','韬光养晦，藏锋守拙，静待时变。'],
+['37. ䷤ 家人','家人，秩序，结构','各司其职，家道有序，和谐长久。'],
+['38. ䷥ 睽','睽违，对立，差异','矛盾对立，或可互补，相辅相成。'],
+['39. ䷦ 蹇','蹇难，阻碍，困境','重重阻碍，需重新审视策略方向。'],
+['40. ䷧ 解','解脱，释放，舒缓','矛盾化解，如释重负，豁然开朗。'],
+['41. ䷨ 损','损减，舍弃，平衡','去除多余，损之又损，以复均衡。'],
+['42. ䷩ 益','增益，扩展，收获','广施众惠，开放共享，蓬勃生长。'],
+['43. ䷪ 夬','决断，突破，清明','当机立断，果断行动，一击制胜。'],
+['44. ䷫ 姤','相遇，诱惑，影响','偶然相遇，潜移默化，宜保持警觉。'],
+['45. ䷬ 萃','聚合，集体，团聚','众人汇聚，凝聚于共同核心之下。'],
+['46. ䷭ 升','上升，成长，渐进','步步上升，稳扎稳打，终达顶峰。'],
+['47. ䷮ 困','困境，疲竭，极限','身陷困境，耐力受考，静待转机。'],
+['48. ䷯ 井','水井，资源，深度','源源不竭，取之有道，源头深远。'],
+['49. ䷰ 革','革新，变革，转化','旧制已去，革故鼎新，焕然一新。'],
+['50. ䷱ 鼎','鼎器，转化，智慧','内在炼化，脱胎换骨，升华心灵。'],
+['51. ䷲ 震','震动，冲击，觉醒','突发事件，令人惊醒，洞察自身。'],
+['52. ䷳ 艮','静止，安宁，冥想','主动止息，令心澄明，安定如山。'],
+['53. ䷴ 渐','渐进，发展，成熟','缓步前行，水到渠成，稳中求进。'],
+['54. ䷵ 归妹','归妹，依附，脆弱','处境不稳，需谨慎适应，以柔克刚。'],
+['55. ䷶ 丰','丰盛，顶峰，强烈','盛极之时，变化在即，盛衰相倚。'],
+['56. ䷷ 旅','旅行，过渡，不定','旅途无常，随遇而安，灵活应变。'],
+['57. ䷸ 巽','巽顺，柔和，说服','潜移默化，以柔克刚，润物无声。'],
+['58. ䷹ 兑','喜悦，交流，沟通','心怀喜悦，开诚布公，和谐共处。'],
+['59. ䷺ 涣','涣散，消解，流动','固执消融，阻滞化解，流动贯通。'],
+['60. ䷻ 节','节制，规范，法度','立定规矩，张弛有度，方得自由。'],
+['61. ䷼ 中孚','诚信，真实，内心','诚心感人，以信立身，信任长存。'],
+['62. ䷽ 小过','细节，谨慎，精确','谨于小事，审慎处置，不失细节。'],
+['63. ䷾ 既济','既济，平衡，圆满','大功告成，然需防骄，成果脆弱。'],
+['64. ䷿ 未济','未济，过渡，未竟','一轮终结，另一轮开启，生生不息。']
+]
+};
+
+// ── UI labels ──────────────────────────────────────────────────────────────
+const UI={
+  fr:{hexagram:'Hexagramme',reset:'Réinitialiser',trigrams:'Trigrammes',
+      showInfo:'Panneau d\'informations',hexNav:'Hexagramme →',
+      gotoNum:'Par numéro…',mutNav:'Mutation ↔ naviguer',
+      theme:'Thème',lang:'Langue',random:'Aléatoire',
+      toss:'Lancer',numLabel:'Numéro (1 – 64) :',
+      ok:'OK',cancel:'Annuler',done:'Terminé ✓',
+      lineProgress:n=>`Ligne ${n} / 6`,about:'À propos…',close:'Fermer',show_mut_btn:'Bouton de mutation',
+      aboutDesc:'Identifiez les hexagrammes du Yi Jing en basculant les lignes yin et yang.\nSupporte le tirage aux pièces, les lignes changeantes et trois langues.'},
+  en:{hexagram:'Hexagram',reset:'Reset',trigrams:'Trigrams',
+      showInfo:'Info panel',hexNav:'Hexagram →',
+      gotoNum:'By number…',mutNav:'Mutation ↔ navigate',
+      theme:'Theme',lang:'Language',random:'Random',
+      toss:'Toss',numLabel:'Number (1 – 64):',
+      ok:'OK',cancel:'Cancel',done:'Done ✓',
+      lineProgress:n=>`Line ${n} / 6`,about:'About…',close:'Close',show_mut_btn:'Mutation button',
+      aboutDesc:'Identify I Ching hexagrams by toggling yin and yang lines.\nSupports coin-toss divination, changing lines and three languages.'},
+  zh:{hexagram:'卦',reset:'重置',trigrams:'三爻',
+      showInfo:'信息面板',hexNav:'选卦 →',
+      gotoNum:'按序号…',mutNav:'变卦 ↔ 导航',
+      theme:'主题',lang:'语言',random:'随机',
+      toss:'掷',numLabel:'序号 (1 – 64)：',
+      ok:'确定',cancel:'取消',done:'完成 ✓',
+      lineProgress:n=>`第${n}爻`,about:'关于…',close:'关闭',show_mut_btn:'变爻按钮',
+      aboutDesc:'通过切换阴爻和阳爻来识别《易经》卦象。\n支持铜钱占卜法、变爻和三种语言。'},
+};
+const LINE_TYPE={
+  fr:{6:'6 · vieux yin',7:'7 · jeune yang',8:'8 · jeune yin',9:'9 · vieux yang'},
+  en:{6:'6 · old yin',  7:'7 · young yang',8:'8 · young yin',9:'9 · old yang'},
+  zh:{6:'6·老阴',       7:'7·少阳',        8:'8·少阴',       9:'9·老阳'},
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+const lines={1:1,2:1,3:1,4:1,5:1,6:1};
+const muts ={1:0,2:0,3:0,4:0,5:0,6:0};
+let lang='fr', theme='sepia';
+let showTrigrams=true, showInfo=true, mutNavMode=true;
+let showMutBtn=true, mutMode=false;
+let randLine=0, randCoins=[], randSum=0;
+
+// ── Persistence ────────────────────────────────────────────────────────────
+function loadPrefs(){
+  const t=localStorage.getItem('yi_theme');
+  const l=localStorage.getItem('yi_lang');
+  const st=localStorage.getItem('yi_st');
+  const si=localStorage.getItem('yi_si');
+  const mn=localStorage.getItem('yi_mn');
+  const smb=localStorage.getItem('yi_smb');
+  if(t)theme=t;
+  if(l&&'fr en zh'.includes(l))lang=l;
+  if(st!==null)showTrigrams=st==='1';
+  if(si!==null)showInfo=si==='1';
+  if(mn!==null)mutNavMode=mn==='1';
+  if(smb!==null)showMutBtn=smb==='1';
+}
+function savePrefs(){
+  localStorage.setItem('yi_theme',theme);
+  localStorage.setItem('yi_lang',lang);
+  localStorage.setItem('yi_st',showTrigrams?'1':'0');
+  localStorage.setItem('yi_si',showInfo?'1':'0');
+  localStorage.setItem('yi_mn',mutNavMode?'1':'0');
+  localStorage.setItem('yi_smb',showMutBtn?'1':'0');
+}
+
+// ── Theme helper ───────────────────────────────────────────────────────────
+function T(k){return getComputedStyle(document.body).getPropertyValue('--'+k).trim()}
+
+// ── Hex logic ──────────────────────────────────────────────────────────────
+function getHex(lv=lines){
+  const lo=lv[1]+lv[2]*2+lv[3]*4, hi=lv[4]+lv[5]*2+lv[6]*4;
+  return HEX_TABLE[hi*8+lo];
+}
+function getMutLines(){
+  const ml={};for(let i=1;i<=6;i++)ml[i]=lines[i]^muts[i];return ml;
+}
+function hasMuts(){for(let i=1;i<=6;i++)if(muts[i])return true;return false;}
+
+// ── Draw hexagram ──────────────────────────────────────────────────────────
+function yOf(n){return 54+(6-n)*44}
+
+function drawHexOn(cvs,lv,mv,blankFrom=0){
+  const ctx=cvs.getContext('2d');
+  const bg=T('bg');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,cvs.width,cvs.height);
+
+  const sepY=yOf(4)+22;
+  ctx.strokeStyle=T('sep'); ctx.lineWidth=1;
+  ctx.setLineDash([6,3]);
+  ctx.beginPath(); ctx.moveTo(20,sepY); ctx.lineTo(240,sepY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  for(let i=1;i<=6;i++){
+    const y=yOf(i);
+    ctx.fillStyle=T('fg2'); ctx.font='9px Helvetica,Arial,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(i),13,y);
+
+    if(blankFrom>0&&i>=blankFrom){
+      ctx.strokeStyle=T('fg2'); ctx.lineWidth=1;
+      ctx.setLineDash([3,6]);
+      ctx.beginPath(); ctx.moveTo(32,y); ctx.lineTo(228,y); ctx.stroke();
+      ctx.setLineDash([]); continue;
+    }
+    ctx.strokeStyle=T('line'); ctx.lineWidth=14; ctx.lineCap='butt';
+    ctx.setLineDash([]);
+    if(lv[i]){ctx.beginPath();ctx.moveTo(32,y);ctx.lineTo(228,y);ctx.stroke();}
+    else{
+      ctx.beginPath();ctx.moveTo(32,y);ctx.lineTo(108,y);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(152,y);ctx.lineTo(228,y);ctx.stroke();
+    }
+    if(mv[i]){
+      const cx=130; ctx.lineWidth=2;
+      if(lv[i]){
+        ctx.strokeStyle=T('accent'); ctx.fillStyle=bg;
+        ctx.beginPath(); ctx.arc(cx,y,9,0,2*Math.PI); ctx.fill(); ctx.stroke();
+      } else {
+        ctx.strokeStyle=T('accent'); ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(cx-9,y-9);ctx.lineTo(cx+9,y+9);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(cx-9,y+9);ctx.lineTo(cx+9,y-9);ctx.stroke();
+      }
+    }
+  }
+}
+
+function drawHex(){
+  drawHexOn(document.getElementById('hex-canvas'),lines,muts,randLine>0?randLine:0);
+}
+
+// ── Draw trigrams ──────────────────────────────────────────────────────────
+function drawTriBlock(ctx,yc,idx){
+  const cx=50;
+  ctx.strokeStyle=T('tri-border'); ctx.fillStyle=T('tri-bg');
+  ctx.lineWidth=1; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.rect(5,yc-40,90,80); ctx.fill(); ctx.stroke();
+
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle=T('accent');
+  ctx.font='bold 17px Helvetica,Arial,sans-serif';
+  ctx.fillText(TRI_SYM[idx],cx,yc-22);
+
+  ctx.fillStyle=T('fg');
+  ctx.font='15px Helvetica,Arial,sans-serif';
+  ctx.fillText(TRI_HANZI[idx],cx,yc-2);
+
+  ctx.fillStyle=T('fg2');
+  ctx.font='11px Helvetica,Arial,sans-serif';
+  ctx.fillText(TRI_PINYIN[idx],cx,yc+15);
+
+  ctx.font='italic 10px Helvetica,Arial,sans-serif';
+  ctx.fillText(TRI_NAMES[lang][idx],cx,yc+31);
+}
+
+function drawTrisOn(cvs,lv){
+  const ctx=cvs.getContext('2d');
+  ctx.fillStyle=T('bg'); ctx.fillRect(0,0,cvs.width,cvs.height);
+  const sepY=yOf(4)+22;
+  ctx.strokeStyle=T('sep'); ctx.lineWidth=1; ctx.setLineDash([6,3]);
+  ctx.beginPath(); ctx.moveTo(0,sepY); ctx.lineTo(100,sepY); ctx.stroke();
+  ctx.setLineDash([]);
+  const lo=lv[1]+lv[2]*2+lv[3]*4, hi=lv[4]+lv[5]*2+lv[6]*4;
+  drawTriBlock(ctx,98,hi); drawTriBlock(ctx,230,lo);
+}
+function drawTris(){drawTrisOn(document.getElementById('tri-canvas'),lines);}
+
+// ── Info ───────────────────────────────────────────────────────────────────
+function updateInfo(num){
+  const el=document.getElementById('info');
+  if(!num||!HD[lang][num]){el.innerHTML='';return;}
+  const [t,b,i]=HD[lang][num];
+  el.innerHTML=`<div class="hex-title">${t}</div>`+
+    `<div class="hex-bold">${b}</div>`+
+    `<div class="hex-italic">${i}</div>`;
+}
+
+// ── Mutation panel ─────────────────────────────────────────────────────────
+function refreshMutPanel(){
+  const ml=getMutLines(), nm={1:0,2:0,3:0,4:0,5:0,6:0};
+  const num=getHex(ml);
+  drawHexOn(document.getElementById('mut-canvas'),ml,nm);
+  drawTrisOn(document.getElementById('mut-tri'),ml);
+  const d=HD[lang][num];
+  document.getElementById('mut-num').textContent='→  '+(d?d[0]:num);
+  const mt=document.getElementById('mut-tri');
+  showTrigrams?mt.classList.remove('hidden'):mt.classList.add('hidden');
+}
+function updateMutVis(){
+  const ms=document.getElementById('mutsep'), mp=document.getElementById('mut');
+  if(hasMuts() && (randLine<=0 || randLine>6)){
+    ms.classList.remove('hidden');mp.classList.remove('hidden');refreshMutPanel();
+  } else {
+    ms.classList.add('hidden');mp.classList.add('hidden');
+  }
+}
+function applyMut(){
+  const ml=getMutLines();
+  for(let i=1;i<=6;i++){lines[i]=ml[i]; if(!mutNavMode)muts[i]=0;}
+  refresh();
+}
+
+// ── Visibility ─────────────────────────────────────────────────────────────
+function applyTriVis(){
+  const tri=document.getElementById('tri-canvas');
+  showTrigrams?tri.classList.remove('hidden'):tri.classList.add('hidden');
+  if(hasMuts()){
+    const mt=document.getElementById('mut-tri');
+    showTrigrams?mt.classList.remove('hidden'):mt.classList.add('hidden');
+  }
+  savePrefs();
+}
+function applyInfoVis(){
+  const left=document.getElementById('left');
+  const vsep=document.getElementById('vsep');
+  if(showInfo){left.classList.remove('hidden');vsep.classList.remove('hidden');}
+  else{left.classList.add('hidden');vsep.classList.add('hidden');}
+  savePrefs();
+}
+function applyMutBtnVis(){
+  const btn=document.getElementById('mut-mode-btn');
+  if(showMutBtn){btn.classList.add('visible');}
+  else{btn.classList.remove('visible');if(mutMode)toggleMutMode();}
+  savePrefs();
+}
+function toggleMutMode(){
+  mutMode=!mutMode;
+  const btn=document.getElementById('mut-mode-btn');
+  mutMode?btn.classList.add('active'):btn.classList.remove('active');
+}
+
+// ── Nav ────────────────────────────────────────────────────────────────────
+function setHexFromTris(hi,lo){
+  lines[1]=lo&1; lines[2]=(lo>>1)&1; lines[3]=(lo>>2)&1;
+  lines[4]=hi&1; lines[5]=(hi>>1)&1; lines[6]=(hi>>2)&1;
+  for(let i=1;i<=6;i++)muts[i]=0;
+  refresh();
+}
+
+// ── Refresh ────────────────────────────────────────────────────────────────
+function refresh(){
+  drawHex(); drawTris();
+  if(randLine>0&&randLine<=6){
+    updateInfo(0);
+    document.getElementById('hex-num').textContent='';
+  } else {
+    const h=getHex();
+    updateInfo(h);
+    document.getElementById('hex-num').textContent=UI[lang].hexagram+'  '+h;
+  }
+  updateMutVis();
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────
+function resetAll(){
+  for(let i=1;i<=6;i++){lines[i]=1;muts[i]=0;}
+  if(mutMode)toggleMutMode();
+  hideCoinPanel(); refresh();
+}
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+function applyTheme(name){
+  theme=name; document.body.dataset.theme=name;
+  drawHex(); drawTris();
+  if(hasMuts())refreshMutPanel();
+  drawCoinCvs(randCoins);
+  savePrefs(); buildMenu();
+}
+
+// ── Lang ───────────────────────────────────────────────────────────────────
+function setLang(l){
+  lang=l; buildMenu(); drawTris(); refresh();
+  if(hasMuts())refreshMutPanel();
+  if(randLine>0)updateCoinsUI(randCoins,randSum);
+  savePrefs();
+}
+
+// ── Custom PRNG (xorshift32, seeded from click timestamp) ─────────────────
+// Re-seeded on each toss via performance.now() + Date.now() mix, so the
+// exact moment of the click influences the outcome (equivalent of srand).
+let _rngState = 0xdeadbeef;
+function rngSeed(seed) { _rngState = (seed >>> 0) || 1; }
+function rngNext() {
+  _rngState ^= _rngState << 13;
+  _rngState ^= _rngState >>> 17;
+  _rngState ^= _rngState << 5;
+  return (_rngState >>> 0) / 0x100000000;
+}
+
+// ── Coin toss ──────────────────────────────────────────────────────────────
+function drawCoinCvs(coins){
+  const cvs=document.getElementById('coins-canvas');
+  const ctx=cvs.getContext('2d');
+  ctx.fillStyle=T('bg-left'); ctx.fillRect(0,0,cvs.width,cvs.height);
+  coins.forEach((v,i)=>{
+    const cx=15+i*30, cy=15;
+    const lbl=v===2?(lang==='zh'?'字':lang==='en'?'T':'P')
+                   :(lang==='zh'?'花':lang==='en'?'H':'F');
+    if(v===3){
+      ctx.fillStyle=T('accent'); ctx.strokeStyle=T('accent');
+      ctx.beginPath(); ctx.arc(cx,cy,11,0,2*Math.PI); ctx.fill();
+      ctx.fillStyle=T('bg');
+    } else {
+      ctx.fillStyle=T('bg-left'); ctx.strokeStyle=T('accent');
+      ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(cx,cy,11,0,2*Math.PI); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=T('accent');
+    }
+    ctx.font='bold 8px Helvetica,Arial,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(lbl,cx,cy);
+  });
+}
+function updateCoinsUI(coins,sum){
+  randCoins=coins; randSum=sum;
+  drawCoinCvs(coins);
+  document.getElementById('coins-sum').textContent=sum>0?LINE_TYPE[lang][sum]:'';
+  document.getElementById('coins-progress').textContent=
+    randLine>6?UI[lang].done:(randLine>=1?UI[lang].lineProgress(randLine):'');
+}
+function hideCoinPanel(){
+  randLine=0; randCoins=[]; randSum=0;
+  document.getElementById('coins').style.display='none';
+  applyInfoVis();
+}
+function startRandom(){
+  for(let i=1;i<=6;i++){lines[i]=0;muts[i]=0;}
+  randLine=1; randCoins=[]; randSum=0;
+  refresh();
+  document.getElementById('left').classList.remove('hidden');
+  document.getElementById('vsep').classList.remove('hidden');
+  const c=document.getElementById('coins');
+  c.style.display='block';
+  const btn=document.getElementById('toss-btn');
+  btn.disabled=false; btn.textContent=UI[lang].toss;
+  updateCoinsUI([],0);
+}
+function tossCoins(){
+  if(randLine<1||randLine>6)return;
+  rngSeed(Math.floor((performance.now() + Date.now()) * 1000) ^ (randLine * 0x9e3779b9));
+  const coins=Array.from({length:3},()=>rngNext()<.5?2:3);
+  const sum=coins.reduce((a,b)=>a+b,0);
+  const n=randLine;
+  lines[n]=sum===7||sum===9?1:0;
+  muts[n] =sum===6||sum===9?1:0;
+  randLine++;
+  updateCoinsUI(coins,sum);
+  refresh();
+  if(randLine>6){
+    document.getElementById('toss-btn').disabled=true;
+    setTimeout(hideCoinPanel,2000);
+  }
+}
+
+// ── Number dialog ──────────────────────────────────────────────────────────
+function openNumDialog(){
+  document.getElementById('about-dlg').classList.remove('open');
+  document.getElementById('num-dlg').style.display='';
+  document.getElementById('num-label').textContent=UI[lang].numLabel;
+  document.getElementById('num-ok').textContent=UI[lang].ok;
+  document.getElementById('num-cancel').textContent=UI[lang].cancel;
+  document.getElementById('num-slider').value=1;
+  document.getElementById('num-spin').value=1;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('num-spin').focus();
+}
+
+// ── About dialog ───────────────────────────────────────────────────────────
+function showAbout(){
+  document.getElementById('num-dlg').style.display='none';
+  document.getElementById('about-desc').textContent=UI[lang].aboutDesc;
+  document.getElementById('about-close').textContent=UI[lang].close;
+  document.getElementById('about-dlg').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+
+// ── Menu builder ───────────────────────────────────────────────────────────
+function closeMenu(){document.getElementById('menu-drop').classList.remove('open');}
+
+function buildMenu(){
+  const md=document.getElementById('menu-drop');
+  md.innerHTML='';
+  const u=UI[lang];
+
+  function mi(label,fn){
+    const d=document.createElement('div'); d.className='mi';
+    d.innerHTML=label;
+    if(fn)d.addEventListener('click',e=>{e.stopPropagation();fn();closeMenu();});
+    md.appendChild(d); return d;
+  }
+  function sep(){const d=document.createElement('div');d.className='msep';md.appendChild(d);}
+  function check(label,getV,fn){
+    const d=document.createElement('div'); d.className='mi';
+    const upd=()=>{d.innerHTML=`<span class="chk">${getV()?'✓':''}</span>${label}`;};
+    upd();
+    d.addEventListener('click',e=>{e.stopPropagation();fn();upd();});
+    md.appendChild(d);
+  }
+  function sub(label,items){
+    const d=document.createElement('div'); d.className='mi has-sub';
+    d.innerHTML=`<span>${label}</span>`;
+    const s=document.createElement('div'); s.className='sub';
+    items.forEach(([l,f])=>{
+      const it=document.createElement('div'); it.className='mi';
+      it.textContent=l;
+      it.addEventListener('click',e=>{e.stopPropagation();f();closeMenu();});
+      s.appendChild(it);
+    });
+    d.appendChild(s); md.appendChild(d);
+  }
+  function cascade(label,groups){
+    const d=document.createElement('div'); d.className='mi has-sub';
+    d.innerHTML=`<span>${label}</span>`;
+    const s=document.createElement('div'); s.className='sub';
+    groups.forEach(([gl,items])=>{
+      const g=document.createElement('div'); g.className='mi has-sub';
+      g.innerHTML=`<span>${gl}</span>`;
+      const ss=document.createElement('div'); ss.className='sub';
+      items.forEach(([l,f])=>{
+        const it=document.createElement('div'); it.className='mi';
+        it.textContent=l;
+        it.addEventListener('click',e=>{e.stopPropagation();f();closeMenu();});
+        ss.appendChild(it);
+      });
+      g.addEventListener('mouseenter',()=>{
+        const r=g.getBoundingClientRect(), vw=window.innerWidth, vh=window.innerHeight;
+        ss.style.position='fixed';
+        ss.style.right=(vw-r.left)+'px';
+        ss.style.left='auto';
+        ss.style.top=Math.min(r.top, vh-340)+'px';
+        ss.style.bottom='auto';
+      });
+      g.appendChild(ss); s.appendChild(g);
+    });
+    d.appendChild(s); md.appendChild(d);
+  }
+
+  const names=TRI_NAMES[lang];
+  cascade(u.hexNav, Array.from({length:8},(_,lo)=>[
+    TRI_SYM[lo]+' '+names[lo],
+    Array.from({length:8},(_,hi)=>{
+      const num=HEX_TABLE[hi*8+lo], d=HD[lang][num];
+      return [TRI_SYM[hi]+' '+names[hi]+' — '+(d?d[0]:'#'+num),
+              ()=>setHexFromTris(hi,lo)];
+    })
+  ]));
+
+  mi(u.gotoNum, openNumDialog);
+  sep();
+  mi(u.random, startRandom);
+  mi(u.reset,  resetAll);
+  sep();
+  check(u.trigrams, ()=>showTrigrams, ()=>{showTrigrams=!showTrigrams;applyTriVis();});
+  check(u.showInfo, ()=>showInfo,     ()=>{showInfo=!showInfo;applyInfoVis();});
+  check(u.mutNav,    ()=>mutNavMode,    ()=>{mutNavMode=!mutNavMode;savePrefs();});
+  check(u.show_mut_btn,()=>showMutBtn,()=>{showMutBtn=!showMutBtn;applyMutBtnVis();});
+  sep();
+  sub(u.lang,[['Français',()=>setLang('fr')],['English',()=>setLang('en')],['中文',()=>setLang('zh')]]);
+  sub(u.theme,[['light',()=>applyTheme('light')],['dark',()=>applyTheme('dark')],
+               ['sepia',()=>applyTheme('sepia')],['green',()=>applyTheme('green')]]);
+  sep();
+  mi(u.about, showAbout);
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  loadPrefs();
+  document.body.dataset.theme=theme;
+  buildMenu();
+
+  document.getElementById('menu-btn').addEventListener('click',e=>{
+    e.stopPropagation();
+    document.getElementById('menu-drop').classList.toggle('open');
+  });
+  document.addEventListener('click',()=>closeMenu());
+
+  const hc=document.getElementById('hex-canvas');
+  hc.addEventListener('click',e=>{
+    const r=hc.getBoundingClientRect();
+    const y=e.clientY-r.top;
+    for(let i=1;i<=6;i++)if(Math.abs(y-yOf(i))<=20){
+      if(mutMode){muts[i]^=1;}else{lines[i]^=1;}
+      refresh();return;
+    }
+  });
+  hc.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    const r=hc.getBoundingClientRect();
+    const y=e.clientY-r.top;
+    for(let i=1;i<=6;i++)if(Math.abs(y-yOf(i))<=20){muts[i]^=1;refresh();return;}
+  });
+  document.getElementById('mut-mode-btn').addEventListener('click',toggleMutMode);
+
+  document.getElementById('mut-num').addEventListener('click',applyMut);
+  document.getElementById('toss-btn').addEventListener('click',tossCoins);
+
+  // Number dialog sync
+  const sl=document.getElementById('num-slider'), sp=document.getElementById('num-spin');
+  sl.addEventListener('input',()=>sp.value=sl.value);
+  sp.addEventListener('input',()=>{
+    const v=Math.min(64,Math.max(1,parseInt(sp.value)||1));
+    sl.value=v;
+  });
+  document.getElementById('num-ok').addEventListener('click',()=>{
+    const n=parseInt(sp.value);
+    if(n>=1&&n<=64){
+      const idx=HEX_TABLE.indexOf(n);
+      if(idx>=0)setHexFromTris(Math.floor(idx/8),idx%8);
+    }
+    document.getElementById('overlay').classList.remove('open');
+  });
+  document.getElementById('num-cancel').addEventListener('click',()=>{
+    document.getElementById('overlay').classList.remove('open');
+  });
+  document.getElementById('about-close').addEventListener('click',()=>{
+    document.getElementById('about-dlg').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  });
+  document.getElementById('overlay').addEventListener('click',e=>{
+    if(e.target===document.getElementById('overlay')){
+      document.getElementById('about-dlg').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    }
+  });
+  sp.addEventListener('keydown',e=>{
+    if(e.key==='Enter')document.getElementById('num-ok').click();
+    if(e.key==='Escape')document.getElementById('num-cancel').click();
+  });
+
+  applyTriVis();
+  applyInfoVis();
+  applyMutBtnVis();
+  refresh();
+});
+</script>
+</body>
+</html>

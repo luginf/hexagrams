@@ -133,12 +133,20 @@ array set ui_labels {
     fr,toss      "Lancer"
     en,toss      "Toss"
     zh,toss      "掷"
+    fr,about        "À propos…"
+    en,about        "About…"
+    zh,about        "关于…"
+    fr,show_mut_btn "Bouton de mutation"
+    en,show_mut_btn "Mutation button"
+    zh,show_mut_btn "变爻按钮"
 }
 
 # --- Visibilité ---
 set ::show_trigrams  1
 set ::show_info      1
 set ::mut_nav_mode   1  ;# 0=remplacer  1=naviguer ↔
+set ::show_mut_btn   1  ;# 0=caché      1=visible
+set ::mut_mode       0  ;# 0=normal     1=clic → mutation
 set ::rand_line       0  ;# 0=inactif, 1..6=prochaine ligne à tirer
 set ::rand_last_coins {} ;# dernier résultat pour redessiner sur changement de thème
 set ::rand_last_sum   0
@@ -170,6 +178,7 @@ proc load_ini {} {
                 show_trigrams { set ::show_trigrams  [expr {$val ? 1 : 0}] }
                 show_info     { set ::show_info      [expr {$val ? 1 : 0}] }
                 mut_nav_mode  { set ::mut_nav_mode   [expr {$val ? 1 : 0}] }
+                show_mut_btn  { set ::show_mut_btn  [expr {$val ? 1 : 0}] }
             }
         }
     }
@@ -185,6 +194,7 @@ proc save_ini {} {
     puts $fh "show_trigrams=$::show_trigrams"
     puts $fh "show_info=$::show_info"
     puts $fh "mut_nav_mode=$::mut_nav_mode"
+    puts $fh "show_mut_btn=$::show_mut_btn"
     close $fh
 }
 
@@ -347,6 +357,27 @@ proc update_info {num} {
 # ==========================================================================
 # VISIBILITÉ
 # ==========================================================================
+proc apply_mut_btn_visibility {} {
+    if {$::show_mut_btn} {
+        pack .right.mutbtn -pady {0 6}
+    } else {
+        pack forget .right.mutbtn
+        set ::mut_mode 0
+    }
+    save_ini
+}
+
+proc toggle_mut_mode {} {
+    set ::mut_mode [expr {1 - $::mut_mode}]
+    if {$::mut_mode} {
+        .right.mutbtn configure -bg [T accent] -fg [T bg] \
+            -activebackground [T accent] -activeforeground [T bg]
+    } else {
+        .right.mutbtn configure -bg [T btn_bg] -fg [T btn_fg] \
+            -activebackground [T sep] -activeforeground [T fg]
+    }
+}
+
 proc apply_trigrams_visibility {} {
     if {$::show_trigrams} {
         pack .right.mid.tri -side left -padx {4 0}
@@ -423,6 +454,61 @@ proc build_hex_menu {} {
 # ==========================================================================
 # NAVIGATION PAR NUMÉRO
 # ==========================================================================
+proc show_about {} {
+    global lang
+    set d .about
+    catch { destroy $d }
+    toplevel $d
+    wm title $d ""
+    wm resizable $d 0 0
+    wm transient $d .
+
+    frame $d.f -padx 24 -pady 18
+    pack $d.f
+
+    label $d.f.title -text "Yi Jing — Hexagram Identifier" \
+        -font {Helvetica 14 bold}
+    pack $d.f.title -pady {0 10}
+
+    set desc [expr {$lang eq "fr" \
+        ? "Identifiez les hexagrammes du Yi Jing en basculant les lignes yin et yang.\nSupporte le tirage aux pièces, les lignes changeantes et trois langues." \
+        : ($lang eq "zh" \
+        ? "通过切换阴爻和阳爻来识别《易经》卦象。\n支持铜钱占卜法、变爻和三种语言。" \
+        : "Identify I Ching hexagrams by toggling yin and yang lines.\nSupports coin-toss divination, changing lines and three languages.")}]
+    label $d.f.desc -text $desc -justify center -font {Helvetica 11} -wraplength 300
+    pack $d.f.desc -pady {0 14}
+
+    label $d.f.link -text "github.com/luginf/hexagrams" \
+        -font {Helvetica 11 underline} -cursor hand2
+    pack $d.f.link
+    bind $d.f.link <Button-1> \
+        {exec xdg-open "https://github.com/luginf/hexagrams/" &}
+
+    set close_lbl [expr {$lang eq "fr" ? "Fermer" \
+                       : ($lang eq "zh" ? "关闭" : "Close")}]
+    button $d.f.close -text $close_lbl -width 8 \
+        -command [list destroy $d]
+    pack $d.f.close -pady {16 0}
+
+    bind $d <Escape> [list destroy $d]
+
+    $d             configure -bg [T bg]
+    $d.f           configure -bg [T bg]
+    $d.f.title     configure -bg [T bg] -fg [T accent]
+    $d.f.desc      configure -bg [T bg] -fg [T fg]
+    $d.f.link      configure -bg [T bg] -fg [T accent]
+    $d.f.close     configure -bg [T btn_bg] -fg [T btn_fg] \
+        -relief flat -activebackground [T sep] -activeforeground [T fg]
+
+    update idletasks
+    set px [expr {[winfo rootx .] + ([winfo width .]  - [winfo reqwidth  $d]) / 2}]
+    set py [expr {[winfo rooty .] + ([winfo height .] - [winfo reqheight $d]) / 2}]
+    wm geometry $d "+$px+$py"
+
+    grab $d
+    focus $d.f.close
+}
+
 proc ask_hexagram_num {} {
     global lang hex_table
 
@@ -775,6 +861,13 @@ proc apply_theme {{theme ""}} {
     .right.mid.c   configure -bg [T bg]
     .right.mid.tri configure -bg [T bg]
     .right.num     configure -bg [T bg] -fg [T accent]
+    if {$::mut_mode} {
+        .right.mutbtn configure -bg [T accent] -fg [T bg] \
+            -activebackground [T accent] -activeforeground [T bg]
+    } else {
+        .right.mutbtn configure -bg [T btn_bg] -fg [T btn_fg] \
+            -activebackground [T sep] -activeforeground [T fg]
+    }
 
     .mutsep         configure -bg [T sep]
     .mut            configure -bg [T bg]
@@ -813,8 +906,8 @@ proc update_ui_labels {} {
         .right.num configure -text "$ui_labels($lang,hexagram)  $h"
     }
     # Indices : 0=HexNav 1=ParNuméro 2=sep 3=Random 4=Reset
-    #           5=sep 6=Trigr 7=Info 8=MutNav
-    #           9=sep 10=Langue 11=Thème(end)
+    #           5=sep 6=Trigr 7=Info 8=MutNav 9=MutBtn
+    #           10=sep 11=Langue 12=Thème 13=sep 14=About
     catch {
         set lang_label [expr {$lang eq "fr" ? "Langue" \
                             : ($lang eq "zh" ? "语言" : "Language")}]
@@ -825,8 +918,10 @@ proc update_ui_labels {} {
         .topbar.mb.m entryconfigure 6   -label $ui_labels($lang,trigrams)
         .topbar.mb.m entryconfigure 7   -label $ui_labels($lang,show_info)
         .topbar.mb.m entryconfigure 8   -label $ui_labels($lang,mut_nav)
-        .topbar.mb.m entryconfigure 10  -label $lang_label
-        .topbar.mb.m entryconfigure end -label $ui_labels($lang,theme)
+        .topbar.mb.m entryconfigure 9   -label $ui_labels($lang,show_mut_btn)
+        .topbar.mb.m entryconfigure 11  -label $lang_label
+        .topbar.mb.m entryconfigure 12  -label $ui_labels($lang,theme)
+        .topbar.mb.m entryconfigure 14  -label $ui_labels($lang,about)
     }
     if {[winfo manager .left.coins] ne ""} {
         .left.coins.top.btn configure -text $ui_labels($lang,toss)
@@ -853,9 +948,14 @@ proc toggle {n} {
 }
 
 proc on_click {y_click} {
+    if {$::rand_line > 0} return
     for {set i 1} {$i <= 6} {incr i} {
         if {abs($y_click - [y_of $i]) <= 20} {
-            toggle $i
+            if {$::mut_mode} {
+                on_rclick $y_click
+            } else {
+                toggle $i
+            }
             return
         }
     }
@@ -878,6 +978,7 @@ proc reset_all {} {
         set lines($i)     1
         set mutations($i) 0
     }
+    if {$::mut_mode} { toggle_mut_mode }
     hide_coins_panel
     refresh
 }
@@ -907,9 +1008,26 @@ pack .topbar -fill x -side top
 label .topbar.title -text "Yi Jing" -font {Helvetica 13} -padx 12 -pady 6
 pack .topbar.title -side left
 
+# Repositionne un sous-menu cascade vers la gauche s'il déborde à droite
+proc clamp_menu_left {m} {
+    after idle [list _do_clamp_menu_left $m]
+}
+proc _do_clamp_menu_left {m} {
+    if {![winfo exists $m] || ![winfo ismapped $m]} return
+    set rx [winfo rootx $m]
+    set rw [winfo width $m]
+    set sw [winfo screenwidth .]
+    if {$rx + $rw <= $sw - 4} return
+    set parent [winfo parent $m]
+    set new_x  [expr {max(0, [winfo rootx $parent] - $rw)}]
+    set ry     [winfo rooty $m]
+    catch {$m post $new_x $ry}
+}
+
 # Menu sandwich ☰
 # Indices : 0=HexNav 1=ParNuméro 2=sep 3=Random 4=Reset
-#           5=sep 6=Trigr 7=Info 8=MutNav 9=sep 10=Langue 11=Thème
+#           5=sep 6=Trigr 7=Info 8=MutNav 9=MutBtn
+#           10=sep 11=Langue 12=Thème 13=sep 14=About
 menubutton .topbar.mb -text "☰" -font {Helvetica 15} \
     -relief flat -padx 10 -pady 4 -cursor hand2
 pack .topbar.mb -side right -padx 4
@@ -950,22 +1068,39 @@ for {set _lo 0} {$_lo <= 7} {incr _lo} {
     -variable ::mut_nav_mode -onvalue 1 -offvalue 0 \
     -command save_ini                                                    ;# 8
 
-.topbar.mb.m add separator                                               ;# 9
+.topbar.mb.m add checkbutton -label "Bouton de mutation" \
+    -variable ::show_mut_btn -onvalue 1 -offvalue 0 \
+    -command apply_mut_btn_visibility                                    ;# 9
+
+.topbar.mb.m add separator                                               ;# 10
 
 # Langue et Thème en bas
 menu .topbar.mb.m.lang -tearoff 0
 .topbar.mb.m.lang add command -label "Français" -command {set_lang fr}
 .topbar.mb.m.lang add command -label "English"  -command {set_lang en}
 .topbar.mb.m.lang add command -label "中文"      -command {set_lang zh}
-.topbar.mb.m add cascade -label "Langue" -menu .topbar.mb.m.lang       ;# 10
+.topbar.mb.m add cascade -label "Langue" -menu .topbar.mb.m.lang      ;# 11
 
 menu .topbar.mb.m.theme -tearoff 0
 foreach th {light dark sepia green} {
     .topbar.mb.m.theme add command -label $th -command [list apply_theme $th]
 }
-.topbar.mb.m add cascade -label "Thème" -menu .topbar.mb.m.theme       ;# 11
+.topbar.mb.m add cascade -label "Thème" -menu .topbar.mb.m.theme       ;# 12
+
+.topbar.mb.m add separator                                               ;# 13
+.topbar.mb.m add command -label "À propos…" \
+    -command show_about                                                   ;# 14
 
 .topbar.mb configure -menu .topbar.mb.m
+
+# Repositionne les sous-menus cascade vers la gauche si nécessaire
+foreach _cm {.topbar.mb.m.hex .topbar.mb.m.lang .topbar.mb.m.theme} {
+    bind $_cm <Map> [list clamp_menu_left %W]
+}
+for {set _lo 0} {$_lo <= 7} {incr _lo} {
+    bind .topbar.mb.m.hex.h$_lo <Map> [list clamp_menu_left %W]
+}
+unset _cm _lo
 
 # Séparateur sous la topbar
 frame .topbar.sep -height 1
@@ -1021,7 +1156,12 @@ canvas .right.mid.tri -width 100 -height 310 \
 pack .right.mid.tri -side left -padx {4 0}
 
 label .right.num -text "" -font {Helvetica 22 bold}
-pack .right.num -pady {4 14}
+pack .right.num -pady {4 6}
+
+button .right.mutbtn -text "○  ×" -font {Helvetica 11} \
+    -relief flat -padx 10 -pady 4 -cursor hand2 \
+    -command toggle_mut_mode
+pack .right.mutbtn -pady {0 6}
 
 bind .right.mid.c <Button-1> {on_click  %y}
 bind .right.mid.c <Button-3> {on_rclick %y}
@@ -1058,3 +1198,4 @@ update_ui_labels
 update_info [get_hexagram]
 apply_trigrams_visibility  ;# applique show_trigrams chargé depuis l'ini
 apply_info_visibility      ;# applique show_info chargé depuis l'ini
+apply_mut_btn_visibility   ;# applique show_mut_btn chargé depuis l'ini
