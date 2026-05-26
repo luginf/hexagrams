@@ -1,11 +1,16 @@
 = Yi Jing — Hexagram Identifier =
 
-A graphical **Tcl/Tk** tool for identifying I Ching hexagrams by toggling yin and yang lines.
-Left-click any line to switch between solid (yang) and broken (yin).
-Right-click a line to mark it as a **changing line** (mutation): ○ on yang, × on yin.
-The hexagram number and its description update in real time.
+A **Tcl/Tk** desktop application and a **single-file HTML/JS** web app for identifying
+and consulting I Ching hexagrams by toggling yin and yang lines.
+
+Web version (no install required): [[https://luginf.github.io/hexagrams/hexagrams.html]]
+
+Project page: [[https://github.com/luginf/hexagrams/]]
+
 
 == Quick start ==
+
+=== Desktop (Tcl/Tk) ===
 
 {{{
 wish hexagrams.tcl
@@ -14,10 +19,19 @@ wish hexagrams.tcl
 Requires **Tcl/Tk 8.5+** ({{{sudo apt install tk}}} on Debian/Ubuntu).
 For CJK characters in the trigram panel: {{{sudo apt install fonts-noto-cjk}}}.
 
+=== Web ===
+
+Open {{{hexagrams.html}}} in any modern browser — no server, no build step, works offline.
+Or visit [[https://luginf.github.io/hexagrams/hexagrams.html]].
+
 == Features ==
 
 * Six lines — **left-click** to toggle yang (solid) / yin (broken)
-* **Right-click** to mark a changing line: ○ on yang (old yang), × on yin (old yin)
+* **Right-click** (desktop) to mark a changing line: ○ on yang (old yang), × on yin (old yin)
+* **Mutation mode button** (○ ×) — below the hexagram number, toggled by click:
+** When active, clicking a line toggles its mutation marker instead of its yin/yang state
+** Designed for touchscreens where right-click is unavailable
+** Show/hide via ☰ → Bouton de mutation / Mutation button / 变爻按钮
 * Real-time hexagram identification (King Wen sequence, 1-64)
 * Left panel with the hexagram's title, keywords and description
 * Right trigram panel showing, for each of the two trigrams:
@@ -31,7 +45,7 @@ For CJK characters in the trigram panel: {{{sudo apt install fonts-noto-cjk}}}.
 ** Each click of **Lancer / Toss / 掷** rolls 3 coins and fills the next line from the bottom up
 ** Pile / tails = 2, face / heads = 3 (traditional method)
 ** Sum 6 = old yin ×, 7 = young yang, 8 = young yin, 9 = old yang ○
-** Each toss re-seeds the random generator from the microsecond clock — the exact moment of the click influences the result
+** Each toss re-seeds the random generator from the click timestamp
 ** Panel hides automatically after the 6th line is filled
 * **Mutation result panel** — appears automatically when changing lines are marked:
 ** Shows the resulting hexagram inline to the right
@@ -43,18 +57,22 @@ For CJK characters in the trigram panel: {{{sudo apt install fonts-noto-cjk}}}.
 ** Each entry shows the hexagram title
 * **Go to number** — hamburger menu → Par numéro…:
 ** Modal dialog with a slider (1–64) and a spinbox, kept in sync
+* **About dialog** — hamburger menu → À propos… / About… / 关于…:
+** Brief description and link to the project page
 * **Four themes** — //light//, //dark//, //sepia// (default), //green//
 * **Three languages** — French, English and Chinese (简体中文)
 * Hamburger menu ☰ (top right) — navigation, display toggles, language, theme, reset
-* Toggle trigram panel and info panel visibility independently
-* Persistent preferences saved to {{{hexagrams.ini}}} next to the script
+* Toggle trigram panel, info panel and mutation button visibility independently
+* Persistent preferences (Tcl: {{{hexagrams.ini}}}; web: {{{localStorage}}})
+* **Web only** — responsive layout: stacks vertically (description → hexagram → mutation) on narrow screens
 
 == Files ==
 
 {{{
 hexagrams/
-├── hexagrams.tcl          main application (single Tcl/Tk file)
-├── hexagrams.ini          persisted preferences (auto-created on first run)
+├── hexagrams.tcl          main Tcl/Tk application (single file)
+├── hexagrams.html         standalone HTML/JS/CSS web app (single file, no server needed)
+├── hexagrams.ini          persisted Tcl/Tk preferences (auto-created on first run)
 ├── hexagrams.fr.creole    hexagram descriptions in French
 ├── hexagrams.creole       hexagram descriptions in English
 ├── hexagrams.zh.creole    hexagram descriptions in Chinese (simplified)
@@ -66,6 +84,8 @@ hexagrams/
 
 == Configuration ==
 
+=== Tcl/Tk ===
+
 Preferences are stored automatically in {{{hexagrams.ini}}} next to the script:
 
 {{{
@@ -74,6 +94,7 @@ lang=fr
 show_trigrams=1
 show_info=1
 mut_nav_mode=1
+show_mut_btn=1
 }}}
 
 Alternatively, two variables near the top of {{{hexagrams.tcl}}} set the compiled-in defaults
@@ -83,6 +104,18 @@ Alternatively, two variables near the top of {{{hexagrams.tcl}}} set the compile
 set lang           "fr"     ;# "fr", "en" or "zh"
 set ::current_theme "sepia" ;# "light", "dark", "sepia" or "green"
 }}}
+
+=== Web ===
+
+Preferences are stored in {{{localStorage}}} under the following keys:
+
+| Key | Value |
+| {{{yi_theme}}} | {{{light}}}, {{{dark}}}, {{{sepia}}} or {{{green}}} |
+| {{{yi_lang}}} | {{{fr}}}, {{{en}}} or {{{zh}}} |
+| {{{yi_st}}} | {{{1}}} = trigrams visible |
+| {{{yi_si}}} | {{{1}}} = info panel visible |
+| {{{yi_mn}}} | {{{1}}} = mutation navigation mode |
+| {{{yi_smb}}} | {{{1}}} = mutation button visible |
 
 == Data format (creole) ==
 
@@ -104,8 +137,14 @@ Hexagram descriptions follow a simple creole markup:
 A **changing line** (爻变, yáo biàn) marks a line that transforms into its opposite,
 producing a second (resulting) hexagram.
 
-Right-click any line to toggle its mutation marker:
+=== Marking changing lines ===
 
+* **Right-click** any line (desktop, both Tcl and web)
+* **Mutation mode button** (○ ×) — click the button to enter mutation mode, then
+  left-click / tap any line to toggle its marker. Click the button again to exit.
+  Show or hide this button via ☰ → Bouton de mutation.
+
+Markers:
 * **○** (old yang, 老阳) — solid line that will become yin
 * **×** (old yin, 老阴) — broken line that will become yang
 
@@ -139,9 +178,9 @@ method: pile (tails) = 2, face (heads) = 3. The three values are summed:
 | 8 | Young yin (少阴) | — |
 | 9 | Old yang (老阳) | ○ |
 
-Lines fill from the bottom up (line 1 first). The random generator is re-seeded from the
-microsecond system clock at the moment of each click, so the exact timing of the click
-influences the outcome. After the sixth line is filled, the panel hides automatically
+Lines fill from the bottom up (line 1 first). The random generator is re-seeded at each click
+(Tcl: microsecond clock; web: custom xorshift32 seeded from {{{performance.now() + Date.now()}}}).
+After the sixth line is filled, the panel hides automatically
 and the completed hexagram (with any mutation markers) remains displayed.
 
 **Reset** hides the coin panel immediately.
@@ -171,6 +210,9 @@ set ::themes(mytheme) {
 foreach th {light dark sepia green mytheme} { ... }
 }}}
 
+In {{{hexagrams.html}}}, add a matching entry to the {{{THEMES}}} object and a
+{{{body[data-theme="mytheme"]}}} CSS block with the same eleven custom properties.
+
 == Hexagram lookup ==
 
 Each hexagram is identified by two trigrams (lower: lines 1-3, upper: lines 4-6).
@@ -186,24 +228,6 @@ giving a number 0-7. The 64-entry lookup table is indexed by {{{upper×8 + lower
 | 5 | Li   | ☲ | Lí   |
 | 6 | Xun  | ☴ | Xùn  |
 | 7 | Qian | ☰ | Qián |
-
-== Roadmap ==
-
-=== HTML/JS version ===
-
-A browser port is planned as a single self-contained {{{hexagrams.html}}} file
-(no server, no build step, works offline).
-
-The {{{.creole}}} data files and all hexagram logic port directly.
-The main mapping is:
-
-* Tcl canvas → HTML5 {{{<canvas>}}} + 2D context
-* Theme system → CSS custom properties ({{{--accent}}}, {{{--bg}}}, …)
-* Info panel → {{{<div>}}} with styled {{{<span>}}} elements
-* Left-click / right-click → {{{click}}} / {{{contextmenu}}} events
-* On mobile, right-click (mutations) would need a long-press fallback
-
-Estimated scope: ~350 lines of vanilla HTML/CSS/JS.
 
 == License ==
 
