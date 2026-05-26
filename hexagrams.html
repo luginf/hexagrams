@@ -140,6 +140,23 @@ body{
   margin:4px 0 14px;cursor:pointer;min-height:20px;
 }
 #mut-num:hover{text-decoration:underline}
+#mut-mode-btn{
+  background:var(--btn-bg);color:var(--btn-fg);border:none;
+  cursor:pointer;padding:4px 14px;font-size:13px;
+  font-family:inherit;border-radius:3px;margin-bottom:8px;
+  display:none;
+}
+#mut-mode-btn.visible{display:inline-block}
+#mut-mode-btn.active{background:var(--accent);color:var(--bg)}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media(max-width:650px){
+  #main{flex-direction:column;align-items:stretch}
+  #left{width:auto}
+  #vsep{width:auto;height:1px;align-self:auto}
+  #mutsep{width:auto;height:1px;align-self:auto}
+  #right,#mut{align-self:center}
+}
 
 /* ── Number dialog ────────────────────────────────────────────────────── */
 #overlay{
@@ -210,6 +227,7 @@ body{
       <canvas id="tri-canvas" width="100" height="310"></canvas>
     </div>
     <div id="hex-num"></div>
+    <button id="mut-mode-btn">○  ×</button>
   </div>
   <div id="mutsep" class="hidden"></div>
   <div id="mut" class="hidden">
@@ -476,7 +494,7 @@ const UI={
       theme:'Thème',lang:'Langue',random:'Aléatoire',
       toss:'Lancer',numLabel:'Numéro (1 – 64) :',
       ok:'OK',cancel:'Annuler',done:'Terminé ✓',
-      lineProgress:n=>`Ligne ${n} / 6`,about:'À propos…',close:'Fermer',
+      lineProgress:n=>`Ligne ${n} / 6`,about:'À propos…',close:'Fermer',show_mut_btn:'Bouton de mutation',
       aboutDesc:'Identifiez les hexagrammes du Yi Jing en basculant les lignes yin et yang.\nSupporte le tirage aux pièces, les lignes changeantes et trois langues.'},
   en:{hexagram:'Hexagram',reset:'Reset',trigrams:'Trigrams',
       showInfo:'Info panel',hexNav:'Hexagram →',
@@ -484,7 +502,7 @@ const UI={
       theme:'Theme',lang:'Language',random:'Random',
       toss:'Toss',numLabel:'Number (1 – 64):',
       ok:'OK',cancel:'Cancel',done:'Done ✓',
-      lineProgress:n=>`Line ${n} / 6`,about:'About…',close:'Close',
+      lineProgress:n=>`Line ${n} / 6`,about:'About…',close:'Close',show_mut_btn:'Mutation button',
       aboutDesc:'Identify I Ching hexagrams by toggling yin and yang lines.\nSupports coin-toss divination, changing lines and three languages.'},
   zh:{hexagram:'卦',reset:'重置',trigrams:'三爻',
       showInfo:'信息面板',hexNav:'选卦 →',
@@ -492,7 +510,7 @@ const UI={
       theme:'主题',lang:'语言',random:'随机',
       toss:'掷',numLabel:'序号 (1 – 64)：',
       ok:'确定',cancel:'取消',done:'完成 ✓',
-      lineProgress:n=>`第${n}爻`,about:'关于…',close:'关闭',
+      lineProgress:n=>`第${n}爻`,about:'关于…',close:'关闭',show_mut_btn:'变爻按钮',
       aboutDesc:'通过切换阴爻和阳爻来识别《易经》卦象。\n支持铜钱占卜法、变爻和三种语言。'},
 };
 const LINE_TYPE={
@@ -506,6 +524,7 @@ const lines={1:1,2:1,3:1,4:1,5:1,6:1};
 const muts ={1:0,2:0,3:0,4:0,5:0,6:0};
 let lang='fr', theme='sepia';
 let showTrigrams=true, showInfo=true, mutNavMode=true;
+let showMutBtn=true, mutMode=false;
 let randLine=0, randCoins=[], randSum=0;
 
 // ── Persistence ────────────────────────────────────────────────────────────
@@ -515,11 +534,13 @@ function loadPrefs(){
   const st=localStorage.getItem('yi_st');
   const si=localStorage.getItem('yi_si');
   const mn=localStorage.getItem('yi_mn');
+  const smb=localStorage.getItem('yi_smb');
   if(t)theme=t;
   if(l&&'fr en zh'.includes(l))lang=l;
   if(st!==null)showTrigrams=st==='1';
   if(si!==null)showInfo=si==='1';
   if(mn!==null)mutNavMode=mn==='1';
+  if(smb!==null)showMutBtn=smb==='1';
 }
 function savePrefs(){
   localStorage.setItem('yi_theme',theme);
@@ -527,6 +548,7 @@ function savePrefs(){
   localStorage.setItem('yi_st',showTrigrams?'1':'0');
   localStorage.setItem('yi_si',showInfo?'1':'0');
   localStorage.setItem('yi_mn',mutNavMode?'1':'0');
+  localStorage.setItem('yi_smb',showMutBtn?'1':'0');
 }
 
 // ── Theme helper ───────────────────────────────────────────────────────────
@@ -681,6 +703,17 @@ function applyInfoVis(){
   else{left.classList.add('hidden');vsep.classList.add('hidden');}
   savePrefs();
 }
+function applyMutBtnVis(){
+  const btn=document.getElementById('mut-mode-btn');
+  if(showMutBtn){btn.classList.add('visible');}
+  else{btn.classList.remove('visible');if(mutMode)toggleMutMode();}
+  savePrefs();
+}
+function toggleMutMode(){
+  mutMode=!mutMode;
+  const btn=document.getElementById('mut-mode-btn');
+  mutMode?btn.classList.add('active'):btn.classList.remove('active');
+}
 
 // ── Nav ────────────────────────────────────────────────────────────────────
 function setHexFromTris(hi,lo){
@@ -707,6 +740,7 @@ function refresh(){
 // ── Reset ──────────────────────────────────────────────────────────────────
 function resetAll(){
   for(let i=1;i<=6;i++){lines[i]=1;muts[i]=0;}
+  if(mutMode)toggleMutMode();
   hideCoinPanel(); refresh();
 }
 
@@ -904,7 +938,8 @@ function buildMenu(){
   sep();
   check(u.trigrams, ()=>showTrigrams, ()=>{showTrigrams=!showTrigrams;applyTriVis();});
   check(u.showInfo, ()=>showInfo,     ()=>{showInfo=!showInfo;applyInfoVis();});
-  check(u.mutNav,   ()=>mutNavMode,   ()=>{mutNavMode=!mutNavMode;savePrefs();});
+  check(u.mutNav,    ()=>mutNavMode,    ()=>{mutNavMode=!mutNavMode;savePrefs();});
+  check(u.show_mut_btn,()=>showMutBtn,()=>{showMutBtn=!showMutBtn;applyMutBtnVis();});
   sep();
   sub(u.lang,[['Français',()=>setLang('fr')],['English',()=>setLang('en')],['中文',()=>setLang('zh')]]);
   sub(u.theme,[['light',()=>applyTheme('light')],['dark',()=>applyTheme('dark')],
@@ -929,7 +964,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   hc.addEventListener('click',e=>{
     const r=hc.getBoundingClientRect();
     const y=e.clientY-r.top;
-    for(let i=1;i<=6;i++)if(Math.abs(y-yOf(i))<=20){lines[i]^=1;refresh();return;}
+    for(let i=1;i<=6;i++)if(Math.abs(y-yOf(i))<=20){
+      if(mutMode){muts[i]^=1;}else{lines[i]^=1;}
+      refresh();return;
+    }
   });
   hc.addEventListener('contextmenu',e=>{
     e.preventDefault();
@@ -937,21 +975,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const y=e.clientY-r.top;
     for(let i=1;i<=6;i++)if(Math.abs(y-yOf(i))<=20){muts[i]^=1;refresh();return;}
   });
-
-  // Mobile long-press → mutation (500 ms)
-  let _lpTimer=null, _lpMoved=false;
-  hc.addEventListener('touchstart',e=>{
-    _lpMoved=false;
-    const t=e.touches[0];
-    const r=hc.getBoundingClientRect();
-    const y=t.clientY-r.top;
-    _lpTimer=setTimeout(()=>{
-      if(_lpMoved)return;
-      for(let i=1;i<=6;i++)if(Math.abs(y-yOf(i))<=20){muts[i]^=1;refresh();return;}
-    },500);
-  },{passive:true});
-  hc.addEventListener('touchmove', ()=>{_lpMoved=true; clearTimeout(_lpTimer);},{passive:true});
-  hc.addEventListener('touchend',  ()=>clearTimeout(_lpTimer),{passive:true});
+  document.getElementById('mut-mode-btn').addEventListener('click',toggleMutMode);
 
   document.getElementById('mut-num').addEventListener('click',applyMut);
   document.getElementById('toss-btn').addEventListener('click',tossCoins);
@@ -991,6 +1015,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   applyTriVis();
   applyInfoVis();
+  applyMutBtnVis();
   refresh();
 });
 </script>
