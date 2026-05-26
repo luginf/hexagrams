@@ -1,7 +1,8 @@
 = Yi Jing — Hexagram Identifier =
 
 A graphical **Tcl/Tk** tool for identifying I Ching hexagrams by toggling yin and yang lines.
-Click any of the six lines to switch between a solid yang line and a broken yin line.
+Left-click any line to switch between solid (yang) and broken (yin).
+Right-click a line to mark it as a **changing line** (mutation): ○ on yang, × on yin.
 The hexagram number and its description update in real time.
 
 == Quick start ==
@@ -15,17 +16,19 @@ For CJK characters in the trigram panel: {{{sudo apt install fonts-noto-cjk}}}.
 
 == Features ==
 
-* Six clickable lines — solid (yang ☰) or broken (yin ☷)
+* Six lines — **left-click** to toggle yang (solid) / yin (broken)
+* **Right-click** to mark a changing line: ○ on yang (old yang), × on yin (old yin)
 * Real-time hexagram identification (King Wen sequence, 1-64)
 * Left panel with the hexagram's title, keywords and description
 * Right trigram panel showing, for each of the two trigrams:
 ** Unicode trigram symbol (☰ … ☷)
 ** Chinese character (乾 坤 震 …)
 ** Pinyin name with tones (Qián, Kūn, Zhèn …)
-** English or French translation
+** Translation in the active language
 * **Three themes** — //light//, //dark//, //sepia// (default)
-* **Three languages** — French, English and Chinese (简体中文), cycling at runtime
-* Reset button to return to hexagram 1 (Qián — all yang)
+* **Three languages** — French, English and Chinese (简体中文)
+* Hamburger menu ☰ (top right) — language, theme, reset
+* Reset clears all mutations and returns to hexagram 1 (Qián)
 
 == Files ==
 
@@ -65,10 +68,22 @@ Hexagram descriptions follow a simple creole markup:
 * {{{**…**}}} — bold keywords
 * {{{//…//}}} — italic description
 
+== Mutations ==
+
+A **changing line** (爻变, yáo biàn) marks a line that transforms into its opposite,
+producing a second (resulting) hexagram.
+
+Right-click any line to toggle its mutation marker:
+
+* **○** (old yang, 老阳) — solid line that will become yin
+* **×** (old yin, 老阴) — broken line that will become yang
+
+Mutation markers are independent of the line type and are cleared by Reset.
+
 == Adding a theme ==
 
 In {{{hexagrams.tcl}}}, add a new entry to {{{::themes}}} with all eleven colour keys,
-then append the name to the menubutton loop:
+then append the name to the theme submenu loop:
 
 {{{
 set ::themes(mytheme) {
@@ -96,6 +111,24 @@ giving a number 0-7. The 64-entry lookup table is indexed by {{{upper×8 + lower
 | 5 | Li   | ☲ | Lí   |
 | 6 | Xun  | ☴ | Xùn  |
 | 7 | Qian | ☰ | Qián |
+
+== Roadmap ==
+
+=== HTML/JS version ===
+
+A browser port is planned as a single self-contained {{{hexagrams.html}}} file
+(no server, no build step, works offline).
+
+The {{{.creole}}} data files and all hexagram logic port directly.
+The main mapping is:
+
+* Tcl canvas → HTML5 {{{<canvas>}}} + 2D context
+* Theme system → CSS custom properties ({{{--accent}}}, {{{--bg}}}, …)
+* Info panel → {{{<div>}}} with styled {{{<span>}}} elements
+* Left-click / right-click → {{{click}}} / {{{contextmenu}}} events
+* On mobile, right-click (mutations) would need a long-press fallback
+
+Estimated scope: ~350 lines of vanilla HTML/CSS/JS.
 
 == License ==
 

@@ -12,19 +12,23 @@ wish hexagrams.tcl &
 
 | Action | Expected result |
 |---|---|
-| Launch | Window opens in sepia theme, "Hexagramme  1" (all yang) |
-| Click any line | Line toggles solid↔broken, hexagram number updates |
+| Launch | Sepia theme, topbar with ☰, "Hexagramme  1" (all yang, no mutations) |
+| Left-click any line | Line toggles solid↔broken, hexagram number updates |
 | All lines yin | "Hexagramme  2" |
 | Lines 1–3 yang, 4–6 yin | "Hexagramme  11" |
 | Lines 1–3 yin, 4–6 yang | "Hexagramme  12" |
+| Right-click a yang line | ○ appears centered on the solid line (accent color) |
+| Right-click a yin line | × appears in the gap between the two half-lines |
+| Right-click again | Marker removed |
+| Left-click a marked line | Line type toggles, marker stays (○ becomes × or vice versa) |
 | Trigram canvas | Two framed blocks aligned with upper/lower trigrams |
-| Click EN | Labels switch to English, trigram translations update |
-| Click 中 | Labels switch to Chinese (卦 / 重置), trigram panel shows 天地水火… |
-| Click FR | Returns to French |
-| Theme menu → dark | Window goes dark, canvas items redraw in dark palette |
-| Theme menu → light | Clean white palette |
-| Theme menu → sepia | Warm sepia palette (default) |
-| Réinitialiser / Reset | All lines return to yang, Hexagramme/Hexagram 1 |
+| ☰ → Langue → English | Labels switch to English, trigram translations update |
+| ☰ → Langue → 中文 | Labels switch to Chinese (卦 / 重置), trigrams show 天地水火… |
+| ☰ → Langue → Français | Returns to French |
+| ☰ → Thème → dark | Window goes dark, canvas items redraw in dark palette |
+| ☰ → Thème → light | Clean white palette |
+| ☰ → Thème → sepia | Warm sepia palette |
+| ☰ → Reset | All lines return to yang, all mutations cleared, Hexagramme 1 |
 
 ## Troubleshooting
 - `wish` not found → `sudo apt install tk`
