@@ -1,7 +1,7 @@
 #!/usr/bin/env wish
 # Yi Jing — Hexagram identifier
 
-# ── Langue par défaut : "fr" ou "en" ──────────────────────────────────────
+# ── Langue par défaut : "fr", "en" ou "zh" ───────────────────────────────
 set lang "fr"
 # ── Thème par défaut : "light", "dark" ou "sepia" ─────────────────────────
 set ::current_theme "sepia"
@@ -81,6 +81,7 @@ set tri_hanzi   {坤    震    坎    兌    艮    離    巽    乾  }
 set tri_symbol  {☷    ☳    ☵    ☱    ☶    ☲    ☴    ☰  }
 set tri_fr      {Terre Tonnerre Eau  Lac  Montagne Feu  Vent  Ciel}
 set tri_en      {Earth Thunder  Water Lake Mountain Fire Wind  Heaven}
+set tri_zh      {地    雷      水   泽   山       火   风   天  }
 
 # --- Libellés selon la langue ---
 array set ui_labels {
@@ -89,7 +90,10 @@ array set ui_labels {
     fr,lang_btn  "EN"
     en,hexagram  "Hexagram"
     en,reset     "Reset"
-    en,lang_btn  "FR"
+    en,lang_btn  "中"
+    zh,hexagram  "卦"
+    zh,reset     "重置"
+    zh,lang_btn  "FR"
 }
 
 # ==========================================================================
@@ -98,6 +102,7 @@ array set ui_labels {
 proc data_file {} {
     global lang
     if {$lang eq "fr"} { return "hexagrams.fr.creole" }
+    if {$lang eq "zh"} { return "hexagrams.zh.creole" }
     return "hexagrams.creole"
 }
 
@@ -159,14 +164,15 @@ proc get_hexagram {} {
 }
 
 proc draw_tri_block {yc idx} {
-    global lang tri_pinyin tri_hanzi tri_symbol tri_fr tri_en
+    global lang tri_pinyin tri_hanzi tri_symbol tri_fr tri_en tri_zh
     set c .right.mid.tri
     set cx 50
 
     set symbol [lindex $tri_symbol  $idx]
     set hanzi  [lindex $tri_hanzi   $idx]
     set pinyin [lindex $tri_pinyin  $idx]
-    set trans  [lindex [expr {$lang eq "fr" ? $tri_fr : $tri_en}] $idx]
+    set tlist  [expr {$lang eq "fr" ? $tri_fr : ($lang eq "zh" ? $tri_zh : $tri_en)}]
+    set trans  [lindex $tlist $idx]
 
     $c create rectangle 5 [expr {$yc-40}] 95 [expr {$yc+40}] \
         -outline [T tri_border] -fill [T tri_bg] -width 1
@@ -239,6 +245,16 @@ proc apply_theme {{theme ""}} {
     # Fenêtre principale
     . configure -bg [T bg]
 
+    # Barre du haut
+    .topbar       configure -bg [T bg]
+    .topbar.title configure -bg [T bg] -fg [T fg2]
+    .topbar.mb    configure -bg [T bg] -fg [T fg] \
+        -activebackground [T sep] -activeforeground [T fg]
+    .topbar.sep   configure -bg [T sep]
+    catch { .topbar.mb.m          configure -bg [T btn_bg] -fg [T fg] }
+    catch { .topbar.mb.m.lang     configure -bg [T btn_bg] -fg [T fg] }
+    catch { .topbar.mb.m.theme    configure -bg [T btn_bg] -fg [T fg] }
+
     # Panneau gauche
     .left configure -bg [T bg_left]
     .left.txt configure -bg [T bg_left] -fg [T fg]
@@ -252,23 +268,15 @@ proc apply_theme {{theme ""}} {
         -font {Helvetica 12 italic} -justify center \
         -foreground [T fg2]
 
-    # Séparateur
+    # Séparateur vertical
     .sep configure -bg [T sep]
 
     # Panneau droit
-    .right configure -bg [T bg]
-    .right.lbl configure -bg [T bg] -fg [T fg2]
-    .right.mid configure -bg [T bg]
+    .right         configure -bg [T bg]
+    .right.mid     configure -bg [T bg]
     .right.mid.c   configure -bg [T bg]
     .right.mid.tri configure -bg [T bg]
     .right.num     configure -bg [T bg] -fg [T accent]
-    .right.btns    configure -bg [T bg]
-    .right.reset   configure -bg [T btn_bg] -fg [T btn_fg] \
-        -activebackground [T sep] -activeforeground [T fg]
-    .right.langbtn configure -bg [T btn_bg] -fg [T btn_fg] \
-        -activebackground [T sep] -activeforeground [T fg]
-    .right.theme_mb configure -bg [T btn_bg] -fg [T fg2] \
-        -activebackground [T sep] -activeforeground [T fg]
 
     # Redessiner les canvas avec les nouvelles couleurs
     draw_hexagram
@@ -281,9 +289,13 @@ proc apply_theme {{theme ""}} {
 proc update_ui_labels {} {
     global lang ui_labels
     set h [get_hexagram]
-    .right.num     configure -text "$ui_labels($lang,hexagram)  $h"
-    .right.reset   configure -text $ui_labels($lang,reset)
-    .right.langbtn configure -text $ui_labels($lang,lang_btn)
+    .right.num configure -text "$ui_labels($lang,hexagram)  $h"
+    # Met à jour le libellé dynamique Reset dans le menu sandwich
+    catch {
+        set lang_label [expr {$lang eq "fr" ? "Langue" : ($lang eq "zh" ? "语言" : "Language")}]
+        .topbar.mb.m entryconfigure 0 -label $lang_label
+        .topbar.mb.m entryconfigure end -label $ui_labels($lang,reset)
+    }
 }
 
 proc refresh {} {
@@ -314,9 +326,9 @@ proc reset_all {} {
     refresh
 }
 
-proc switch_lang {} {
+proc set_lang {l} {
     global lang
-    set lang [expr {$lang eq "fr" ? "en" : "fr"}]
+    set lang $l
     load_hexagrams
     draw_trigrams
     update_info [get_hexagram]
@@ -328,6 +340,45 @@ proc switch_lang {} {
 # ==========================================================================
 wm title . "Yi Jing"
 wm resizable . 0 0
+
+# ── Barre supérieure ──────────────────────────────────────────────────────
+frame .topbar
+pack .topbar -fill x -side top
+
+label .topbar.title -text "Yi Jing" -font {Helvetica 13} -padx 12 -pady 6
+pack .topbar.title -side left
+
+# Menu sandwich ☰
+menubutton .topbar.mb -text "☰" -font {Helvetica 15} \
+    -relief flat -padx 10 -pady 4 -cursor hand2
+pack .topbar.mb -side right -padx 4
+
+menu .topbar.mb.m -tearoff 0
+
+# Sous-menu Langue
+menu .topbar.mb.m.lang -tearoff 0
+.topbar.mb.m.lang add command -label "Français" -command {set_lang fr}
+.topbar.mb.m.lang add command -label "English"  -command {set_lang en}
+.topbar.mb.m.lang add command -label "中文"      -command {set_lang zh}
+.topbar.mb.m add cascade -label "Langue" -menu .topbar.mb.m.lang
+
+# Sous-menu Thème
+menu .topbar.mb.m.theme -tearoff 0
+foreach th {light dark sepia} {
+    .topbar.mb.m.theme add command -label $th -command [list apply_theme $th]
+}
+.topbar.mb.m add cascade -label "Thème" -menu .topbar.mb.m.theme
+
+.topbar.mb.m add separator
+.topbar.mb.m add command -label "Reset" -command reset_all
+
+.topbar.mb configure -menu .topbar.mb.m
+
+# Séparateur sous la topbar
+frame .topbar.sep -height 1
+pack .topbar.sep -fill x -side bottom
+
+# ── Contenu principal ─────────────────────────────────────────────────────
 
 # Panneau gauche — informations
 frame .left
@@ -347,12 +398,9 @@ pack .sep -side left -fill y -pady 8
 frame .right
 pack .right -side left -fill y -padx {4 12} -pady 12
 
-label .right.lbl -text "Yi Jing" -font {Helvetica 13}
-pack .right.lbl -pady {10 2}
-
 # Rangée centrale : hexagramme + trigrammes
 frame .right.mid
-pack .right.mid
+pack .right.mid -pady {10 4}
 
 canvas .right.mid.c -width 260 -height 310 -cursor hand2 \
     -highlightthickness 0
@@ -363,28 +411,7 @@ canvas .right.mid.tri -width 100 -height 310 \
 pack .right.mid.tri -side left -padx {4 0}
 
 label .right.num -text "" -font {Helvetica 22 bold}
-pack .right.num -pady 6
-
-frame .right.btns
-pack .right.btns -pady {0 14}
-
-button .right.reset -text "" -command reset_all \
-    -font {Helvetica 11} -relief groove -padx 12 -pady 3
-pack .right.reset -in .right.btns -side left -padx {0 4}
-
-button .right.langbtn -text "" -command switch_lang \
-    -font {Helvetica 11 bold} -relief groove -padx 10 -pady 3
-pack .right.langbtn -in .right.btns -side left -padx {0 4}
-
-menubutton .right.theme_mb -textvariable ::current_theme \
-    -relief groove -padx 10 -pady 3 -width 6 -cursor hand2
-menu .right.theme_mb.m -tearoff 0
-foreach th {light dark sepia} {
-    .right.theme_mb.m add command -label $th \
-        -command [list apply_theme $th]
-}
-.right.theme_mb configure -menu .right.theme_mb.m
-pack .right.theme_mb -in .right.btns -side left
+pack .right.num -pady {4 14}
 
 bind .right.mid.c <Button-1> {on_click %y}
 

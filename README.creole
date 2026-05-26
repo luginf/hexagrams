@@ -1,0 +1,102 @@
+= Yi Jing — Hexagram Identifier =
+
+A graphical **Tcl/Tk** tool for identifying I Ching hexagrams by toggling yin and yang lines.
+Click any of the six lines to switch between a solid yang line and a broken yin line.
+The hexagram number and its description update in real time.
+
+== Quick start ==
+
+{{{
+wish hexagrams.tcl
+}}}
+
+Requires **Tcl/Tk 8.5+** ({{{sudo apt install tk}}} on Debian/Ubuntu).
+For CJK characters in the trigram panel: {{{sudo apt install fonts-noto-cjk}}}.
+
+== Features ==
+
+* Six clickable lines — solid (yang ☰) or broken (yin ☷)
+* Real-time hexagram identification (King Wen sequence, 1-64)
+* Left panel with the hexagram's title, keywords and description
+* Right trigram panel showing, for each of the two trigrams:
+** Unicode trigram symbol (☰ … ☷)
+** Chinese character (乾 坤 震 …)
+** Pinyin name with tones (Qián, Kūn, Zhèn …)
+** English or French translation
+* **Three themes** — //light//, //dark//, //sepia// (default)
+* **Three languages** — French, English and Chinese (简体中文), cycling at runtime
+* Reset button to return to hexagram 1 (Qián — all yang)
+
+== Files ==
+
+{{{
+hexagrams/
+├── hexagrams.tcl          main application (single Tcl/Tk file)
+├── hexagrams.fr.creole    hexagram descriptions in French
+├── hexagrams.creole       hexagram descriptions in English
+├── hexagrams.zh.creole    hexagram descriptions in Chinese (simplified)
+├── README.creole          this file
+├── CLAUDE.md              developer notes (architecture, theme keys)
+└── .claude/skills/
+    └── run-hexagrams.md   launch & verification checklist
+}}}
+
+== Configuration ==
+
+Two variables at the top of {{{hexagrams.tcl}}} control the defaults:
+
+{{{
+set lang           "fr"    ;# "fr", "en" or "zh"
+set ::current_theme "sepia" ;# "light", "dark" or "sepia"
+}}}
+
+== Data format (creole) ==
+
+Hexagram descriptions follow a simple creole markup:
+
+{{{
+== 1. ䷀ ==
+
+**Creativity, Heaven, Initiative**
+//Creative force of heaven, absolute and active beginning.//
+}}}
+
+* {{{== N. … ==}}} — title (displayed at top of info panel, bold and coloured)
+* {{{**…**}}} — bold keywords
+* {{{//…//}}} — italic description
+
+== Adding a theme ==
+
+In {{{hexagrams.tcl}}}, add a new entry to {{{::themes}}} with all eleven colour keys,
+then append the name to the menubutton loop:
+
+{{{
+set ::themes(mytheme) {
+    bg         #...   bg_left    #...   fg         #...
+    fg2        #...   sep        #...   line       #...
+    tri_bg     #...   tri_border #...   accent     #...
+    btn_bg     #...   btn_fg     #...
+}
+
+foreach th {light dark sepia mytheme} { ... }
+}}}
+
+== Hexagram lookup ==
+
+Each hexagram is identified by two trigrams (lower: lines 1-3, upper: lines 4-6).
+The trigram value is computed as {{{l1 + l2×2 + l3×4}}} (yang = 1, bottom to top),
+giving a number 0-7. The 64-entry lookup table is indexed by {{{upper×8 + lower}}}.
+
+| Value | Trigram | Symbol | Pinyin |
+| 0 | Kun  | ☷ | Kūn  |
+| 1 | Zhen | ☳ | Zhèn |
+| 2 | Kan  | ☵ | Kǎn  |
+| 3 | Dui  | ☱ | Duì  |
+| 4 | Gen  | ☶ | Gèn  |
+| 5 | Li   | ☲ | Lí   |
+| 6 | Xun  | ☴ | Xùn  |
+| 7 | Qian | ☰ | Qián |
+
+== License ==
+
+See {{{LICENSE}}}.

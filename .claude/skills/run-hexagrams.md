@@ -19,6 +19,8 @@ wish hexagrams.tcl &
 | Lines 1–3 yin, 4–6 yang | "Hexagramme  12" |
 | Trigram canvas | Two framed blocks aligned with upper/lower trigrams |
 | Click EN | Labels switch to English, trigram translations update |
+| Click 中 | Labels switch to Chinese (卦 / 重置), trigram panel shows 天地水火… |
+| Click FR | Returns to French |
 | Theme menu → dark | Window goes dark, canvas items redraw in dark palette |
 | Theme menu → light | Clean white palette |
 | Theme menu → sepia | Warm sepia palette (default) |
