@@ -133,6 +133,9 @@ array set ui_labels {
     fr,toss      "Lancer"
     en,toss      "Toss"
     zh,toss      "掷"
+    fr,about     "À propos…"
+    en,about     "About…"
+    zh,about     "关于…"
 }
 
 # --- Visibilité ---
@@ -423,6 +426,61 @@ proc build_hex_menu {} {
 # ==========================================================================
 # NAVIGATION PAR NUMÉRO
 # ==========================================================================
+proc show_about {} {
+    global lang
+    set d .about
+    catch { destroy $d }
+    toplevel $d
+    wm title $d ""
+    wm resizable $d 0 0
+    wm transient $d .
+
+    frame $d.f -padx 24 -pady 18
+    pack $d.f
+
+    label $d.f.title -text "Yi Jing — Hexagram Identifier" \
+        -font {Helvetica 14 bold}
+    pack $d.f.title -pady {0 10}
+
+    set desc [expr {$lang eq "fr" \
+        ? "Identifiez les hexagrammes du Yi Jing en basculant les lignes yin et yang.\nSupporte le tirage aux pièces, les lignes changeantes et trois langues." \
+        : ($lang eq "zh" \
+        ? "通过切换阴爻和阳爻来识别《易经》卦象。\n支持铜钱占卜法、变爻和三种语言。" \
+        : "Identify I Ching hexagrams by toggling yin and yang lines.\nSupports coin-toss divination, changing lines and three languages.")}]
+    label $d.f.desc -text $desc -justify center -font {Helvetica 11} -wraplength 300
+    pack $d.f.desc -pady {0 14}
+
+    label $d.f.link -text "github.com/luginf/hexagrams" \
+        -font {Helvetica 11 underline} -cursor hand2
+    pack $d.f.link
+    bind $d.f.link <Button-1> \
+        {exec xdg-open "https://github.com/luginf/hexagrams/" &}
+
+    set close_lbl [expr {$lang eq "fr" ? "Fermer" \
+                       : ($lang eq "zh" ? "关闭" : "Close")}]
+    button $d.f.close -text $close_lbl -width 8 \
+        -command [list destroy $d]
+    pack $d.f.close -pady {16 0}
+
+    bind $d <Escape> [list destroy $d]
+
+    $d             configure -bg [T bg]
+    $d.f           configure -bg [T bg]
+    $d.f.title     configure -bg [T bg] -fg [T accent]
+    $d.f.desc      configure -bg [T bg] -fg [T fg]
+    $d.f.link      configure -bg [T bg] -fg [T accent]
+    $d.f.close     configure -bg [T btn_bg] -fg [T btn_fg] \
+        -relief flat -activebackground [T sep] -activeforeground [T fg]
+
+    update idletasks
+    set px [expr {[winfo rootx .] + ([winfo width .]  - [winfo reqwidth  $d]) / 2}]
+    set py [expr {[winfo rooty .] + ([winfo height .] - [winfo reqheight $d]) / 2}]
+    wm geometry $d "+$px+$py"
+
+    grab $d
+    focus $d.f.close
+}
+
 proc ask_hexagram_num {} {
     global lang hex_table
 
@@ -826,7 +884,8 @@ proc update_ui_labels {} {
         .topbar.mb.m entryconfigure 7   -label $ui_labels($lang,show_info)
         .topbar.mb.m entryconfigure 8   -label $ui_labels($lang,mut_nav)
         .topbar.mb.m entryconfigure 10  -label $lang_label
-        .topbar.mb.m entryconfigure end -label $ui_labels($lang,theme)
+        .topbar.mb.m entryconfigure 11  -label $ui_labels($lang,theme)
+        .topbar.mb.m entryconfigure 13  -label $ui_labels($lang,about)
     }
     if {[winfo manager .left.coins] ne ""} {
         .left.coins.top.btn configure -text $ui_labels($lang,toss)
@@ -907,6 +966,22 @@ pack .topbar -fill x -side top
 label .topbar.title -text "Yi Jing" -font {Helvetica 13} -padx 12 -pady 6
 pack .topbar.title -side left
 
+# Repositionne un sous-menu cascade vers la gauche s'il déborde à droite
+proc clamp_menu_left {m} {
+    after idle [list _do_clamp_menu_left $m]
+}
+proc _do_clamp_menu_left {m} {
+    if {![winfo exists $m] || ![winfo ismapped $m]} return
+    set rx [winfo rootx $m]
+    set rw [winfo width $m]
+    set sw [winfo screenwidth .]
+    if {$rx + $rw <= $sw - 4} return
+    set parent [winfo parent $m]
+    set new_x  [expr {max(0, [winfo rootx $parent] - $rw)}]
+    set ry     [winfo rooty $m]
+    catch {$m post $new_x $ry}
+}
+
 # Menu sandwich ☰
 # Indices : 0=HexNav 1=ParNuméro 2=sep 3=Random 4=Reset
 #           5=sep 6=Trigr 7=Info 8=MutNav 9=sep 10=Langue 11=Thème
@@ -957,7 +1032,7 @@ menu .topbar.mb.m.lang -tearoff 0
 .topbar.mb.m.lang add command -label "Français" -command {set_lang fr}
 .topbar.mb.m.lang add command -label "English"  -command {set_lang en}
 .topbar.mb.m.lang add command -label "中文"      -command {set_lang zh}
-.topbar.mb.m add cascade -label "Langue" -menu .topbar.mb.m.lang       ;# 10
+.topbar.mb.m add cascade -label "Langue" -menu .topbar.mb.m.lang      ;# 10
 
 menu .topbar.mb.m.theme -tearoff 0
 foreach th {light dark sepia green} {
@@ -965,7 +1040,20 @@ foreach th {light dark sepia green} {
 }
 .topbar.mb.m add cascade -label "Thème" -menu .topbar.mb.m.theme       ;# 11
 
+.topbar.mb.m add separator                                               ;# 12
+.topbar.mb.m add command -label "À propos…" \
+    -command show_about                                                   ;# 13
+
 .topbar.mb configure -menu .topbar.mb.m
+
+# Repositionne les sous-menus cascade vers la gauche si nécessaire
+foreach _cm {.topbar.mb.m.hex .topbar.mb.m.lang .topbar.mb.m.theme} {
+    bind $_cm <Map> [list clamp_menu_left %W]
+}
+for {set _lo 0} {$_lo <= 7} {incr _lo} {
+    bind .topbar.mb.m.hex.h$_lo <Map> [list clamp_menu_left %W]
+}
+unset _cm _lo
 
 # Séparateur sous la topbar
 frame .topbar.sep -height 1
