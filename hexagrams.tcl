@@ -73,7 +73,8 @@ set hex_table {
     12 25  6 10 33 13 44  1
 }
 
-array set lines {1 1 2 1 3 1 4 1 5 1 6 1}
+array set lines     {1 1 2 1 3 1 4 1 5 1 6 1}
+array set mutations {1 0 2 0 3 0 4 0 5 0 6 0}
 
 # --- Données des 8 trigrammes (index 0..7 : Kun Zhen Kan Dui Gen Li Xun Qian) ---
 set tri_pinyin  {Kūn   Zhèn  Kǎn   Duì   Gèn   Lí    Xùn   Qián}
@@ -135,24 +136,46 @@ proc load_hexagrams {} {
 proc y_of {n} { expr {54 + (6 - $n) * 44} }
 
 proc draw_hexagram {} {
-    global lines
-    .right.mid.c delete all
+    global lines mutations
+    set c .right.mid.c
+    $c delete all
     set sep_y [expr {[y_of 4] + 22}]
-    .right.mid.c create line 20 $sep_y 240 $sep_y \
+    $c create line 20 $sep_y 240 $sep_y \
         -fill [T sep] -width 1 -dash {6 3}
     for {set i 1} {$i <= 6} {incr i} {
         set y [y_of $i]
         if {$lines($i)} {
-            .right.mid.c create line 32 $y 228 $y \
+            $c create line 32 $y 228 $y \
                 -width 14 -fill [T line] -capstyle butt
         } else {
-            .right.mid.c create line  32 $y 108 $y \
+            $c create line  32 $y 108 $y \
                 -width 14 -fill [T line] -capstyle butt
-            .right.mid.c create line 152 $y 228 $y \
+            $c create line 152 $y 228 $y \
                 -width 14 -fill [T line] -capstyle butt
         }
-        .right.mid.c create text 13 $y -text $i \
+        $c create text 13 $y -text $i \
             -font {Helvetica 9} -fill [T fg2]
+        # Marqueur de mutation (clic droit)
+        if {$mutations($i)} {
+            set cx 130
+            if {$lines($i)} {
+                # Vieux yang ○ : cercle creux centré sur le trait plein
+                $c create oval \
+                    [expr {$cx-9}] [expr {$y-9}] \
+                    [expr {$cx+9}] [expr {$y+9}] \
+                    -fill [T bg] -outline [T accent] -width 2
+            } else {
+                # Vieux yin × : croix dans l'espace entre les demi-traits
+                $c create line \
+                    [expr {$cx-9}] [expr {$y-9}] \
+                    [expr {$cx+9}] [expr {$y+9}] \
+                    -fill [T accent] -width 2 -capstyle round
+                $c create line \
+                    [expr {$cx-9}] [expr {$y+9}] \
+                    [expr {$cx+9}] [expr {$y-9}] \
+                    -fill [T accent] -width 2 -capstyle round
+            }
+        }
     }
 }
 
@@ -320,9 +343,23 @@ proc on_click {y_click} {
     }
 }
 
+proc on_rclick {y_click} {
+    global mutations
+    for {set i 1} {$i <= 6} {incr i} {
+        if {abs($y_click - [y_of $i]) <= 20} {
+            set mutations($i) [expr {1 - $mutations($i)}]
+            draw_hexagram
+            return
+        }
+    }
+}
+
 proc reset_all {} {
-    global lines
-    for {set i 1} {$i <= 6} {incr i} { set lines($i) 1 }
+    global lines mutations
+    for {set i 1} {$i <= 6} {incr i} {
+        set lines($i)     1
+        set mutations($i) 0
+    }
     refresh
 }
 
@@ -413,7 +450,8 @@ pack .right.mid.tri -side left -padx {4 0}
 label .right.num -text "" -font {Helvetica 22 bold}
 pack .right.num -pady {4 14}
 
-bind .right.mid.c <Button-1> {on_click %y}
+bind .right.mid.c <Button-1> {on_click  %y}
+bind .right.mid.c <Button-3> {on_rclick %y}
 
 # ==========================================================================
 # INITIALISATION
