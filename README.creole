@@ -25,16 +25,28 @@ For CJK characters in the trigram panel: {{{sudo apt install fonts-noto-cjk}}}.
 ** Chinese character (乾 坤 震 …)
 ** Pinyin name with tones (Qián, Kūn, Zhèn …)
 ** Translation in the active language
-* **Three themes** — //light//, //dark//, //sepia// (default)
+* **Mutation result panel** — appears automatically when changing lines are marked:
+** Shows the resulting hexagram inline to the right
+** Click the hexagram label to navigate to the result
+** In navigation mode (default): same mutation positions on the result point back to the origin
+** In replace mode: mutated lines become current, mutations cleared
+* **Hexagram navigation** — hamburger menu → Hexagramme:
+** Cascade menu organised by lower trigram, then upper trigram
+** Each entry shows the hexagram title
+* **Go to number** — hamburger menu → Par numéro…:
+** Modal dialog with a slider (1–64) and a spinbox, kept in sync
+* **Four themes** — //light//, //dark//, //sepia// (default), //green//
 * **Three languages** — French, English and Chinese (简体中文)
-* Hamburger menu ☰ (top right) — language, theme, reset
-* Reset clears all mutations and returns to hexagram 1 (Qián)
+* Hamburger menu ☰ (top right) — navigation, display toggles, language, theme, reset
+* Toggle trigram panel and info panel visibility independently
+* Persistent preferences saved to {{{hexagrams.ini}}} next to the script
 
 == Files ==
 
 {{{
 hexagrams/
 ├── hexagrams.tcl          main application (single Tcl/Tk file)
+├── hexagrams.ini          persisted preferences (auto-created on first run)
 ├── hexagrams.fr.creole    hexagram descriptions in French
 ├── hexagrams.creole       hexagram descriptions in English
 ├── hexagrams.zh.creole    hexagram descriptions in Chinese (simplified)
@@ -46,11 +58,22 @@ hexagrams/
 
 == Configuration ==
 
-Two variables at the top of {{{hexagrams.tcl}}} control the defaults:
+Preferences are stored automatically in {{{hexagrams.ini}}} next to the script:
 
 {{{
-set lang           "fr"    ;# "fr", "en" or "zh"
-set ::current_theme "sepia" ;# "light", "dark" or "sepia"
+theme=sepia
+lang=fr
+show_trigrams=1
+show_info=1
+mut_nav_mode=1
+}}}
+
+Alternatively, two variables near the top of {{{hexagrams.tcl}}} set the compiled-in defaults
+(used only if {{{hexagrams.ini}}} does not exist):
+
+{{{
+set lang           "fr"     ;# "fr", "en" or "zh"
+set ::current_theme "sepia" ;# "light", "dark", "sepia" or "green"
 }}}
 
 == Data format (creole) ==
@@ -78,7 +101,30 @@ Right-click any line to toggle its mutation marker:
 * **○** (old yang, 老阳) — solid line that will become yin
 * **×** (old yin, 老阴) — broken line that will become yang
 
-Mutation markers are independent of the line type and are cleared by Reset.
+When at least one line is marked, the mutation result panel appears to the right of the main
+hexagram, showing the result with no markers.
+
+=== Navigation mode (default) ===
+
+Clicking the result hexagram label navigates to it and keeps the same mutation positions active,
+so clicking again navigates back to the origin. Toggle this behaviour via
+**☰ → Mutation ↔ naviguer**.
+
+=== Replace mode ===
+
+When //Mutation ↔ naviguer// is unchecked, clicking the result applies the mutation in place:
+the mutated lines become the current lines and all mutation markers are cleared.
+
+Mutation markers are always cleared by Reset.
+
+== Hexagram navigation ==
+
+**☰ → Hexagramme** opens a cascade menu organised by **lower trigram** (lines 1-3),
+then **upper trigram** (lines 4-6). Each inner entry shows the hexagram number and title.
+Selecting one navigates directly to that hexagram and clears all mutations.
+
+**☰ → Par numéro…** opens a modal dialog with a horizontal slider (1-64) and a spinbox
+that stay synchronised. Press OK or Enter to navigate to the chosen hexagram.
 
 == Adding a theme ==
 
@@ -93,7 +139,7 @@ set ::themes(mytheme) {
     btn_bg     #...   btn_fg     #...
 }
 
-foreach th {light dark sepia mytheme} { ... }
+foreach th {light dark sepia green mytheme} { ... }
 }}}
 
 == Hexagram lookup ==
