@@ -1,0 +1,328 @@
+= Yi-jing - liste des hexagrammes =
+
+
+//I Ching — 64 hexagrammes//
+
+== 1. ䷀ ==
+
+**Créativité, Ciel, Initiative**
+//Force créatrice du ciel, commencement absolu et actif.//
+
+== 2. ䷁ ==
+
+**Réceptivité, Terre, Accueil**
+//Réception totale, soutien silencieux, fertilité et stabilité.//
+
+== 3. ䷂ ==
+
+**Difficulté, Début, Chaos**
+//Naissance difficile, organisation lente face au désordre initial.//
+
+== 4. ䷃ ==
+
+**Jeunesse, Apprentissage, Ignorance**
+//Inexpérience nécessitant guidance, discipline et apprentissage structuré.//
+
+== 5. ䷄ ==
+
+**Attente, Patience, Maturation**
+//Le moment juste arrive lentement, nécessité de patience.//
+
+== 6. ䷅ ==
+
+**Conflit, Tension, Désaccord**
+//Opposition nécessitant prudence, médiation et retenue stratégique.//
+
+== 7. ䷆ ==
+
+**Armée, Discipline, Organisation**
+//Action collective structurée pour surmonter l’adversité efficacement.//
+
+== 8. ䷇ ==
+
+**Union, Alliance, Solidarité**
+//Cohésion harmonieuse créant stabilité et confiance mutuelle.//
+
+== 9. ䷈ ==
+
+**Retenue, Progression, Petite accumulation**
+//Avancées lentes mais sûres grâce à la maîtrise.//
+
+== 10. ䷉ ==
+
+**Marche, Prudence, Conduite**
+//Avancer avec attention évite erreurs et conflits inutiles.//
+
+== 11. ䷊ ==
+
+**Harmonie, Paix, Équilibre**
+//Forces opposées en accord, période fluide et prospère.//
+
+== 12. ䷋ ==
+
+**Blocage, Stagnation, Séparation**
+//Interruption des flux, repli nécessaire et prudent.//
+
+== 13. ䷌ ==
+
+**Communauté, Fraternité, Union**
+//Coopération autour d’objectifs communs et sincères.//
+
+== 14. ䷍ ==
+
+**Abondance, Richesse, Responsabilité**
+//Grande possession exige sagesse et responsabilité intérieure.//
+
+== 15. ䷎ ==
+
+**Modestie, Humilité, Équilibre**
+//L’humilité favorise stabilité, respect et croissance durable.//
+
+== 16. ䷏ ==
+
+**Enthousiasme, Élan, Motivation**
+//Énergie collective puissante stimulant action et dynamisme.//
+
+== 17. ䷐ ==
+
+**Suivre, Adaptation, Flexibilité**
+//S’adapter intelligemment réduit résistance et conflits.//
+
+== 18. ䷑ ==
+
+**Réparation, Correction, Héritage**
+//Corriger erreurs passées restaure ordre et harmonie.//
+
+== 19. ䷒ ==
+
+**Approche, Progression, Ouverture**
+//Situation favorable arrivant progressivement avec ouverture.//
+
+== 20. ䷓ ==
+
+**Contemplation, Observation, Clarté**
+//Observer avant agir apporte compréhension profonde.//
+
+== 21. ䷔ ==
+
+**Justice, Correction, Action**
+//Intervention ferme pour rétablir ordre et équité.//
+
+== 22. ䷕ ==
+
+**Grâce, Beauté, Apparence**
+//Esthétique harmonise mais ne remplace pas l’essentiel.//
+
+== 23. ䷖ ==
+
+**Désagrégation, Effondrement, Déclin**
+//Structures fragiles s’effondrent progressivement naturellement.//
+
+== 24. ䷗ ==
+
+**Retour, Cycle, Renouveau**
+//Retour aux origines après rupture ou éloignement.//
+
+== 25. ䷘ ==
+
+**Innocence, Sincérité, Spontanéité**
+//Agir naturellement sans calcul favorise justesse intérieure.//
+
+== 26. ䷙ ==
+
+**Puissance, Discipline, Maîtrise**
+//Force contenue par contrôle et concentration.//
+
+== 27. ䷚ ==
+
+**Nourrir, Soutien, Croissance**
+//Ce que l’on nourrit détermine le développement futur.//
+
+== 28. ䷛ ==
+
+**Excès, Charge, Pression**
+//Trop de poids exige changement rapide.//
+
+== 29. ䷜ ==
+
+**Danger, Abîme, Risque**
+//Traverser l’incertitude exige vigilance et courage.//
+
+== 30. ䷝ ==
+
+**Lumière, Clarté, Vision**
+//Compréhension révélant vérité et direction.//
+
+== 31. ䷞ ==
+
+**Influence, Attraction, Résonance**
+//Relations créent transformation mutuelle subtile.//
+
+== 32. ䷟ ==
+
+**Durée, Stabilité, Persistance**
+//Continuité renforce solidité et fiabilité.//
+
+== 33. ䷠ ==
+
+**Retraite, Recul, Stratégie**
+//Se retirer préserve énergie et clarté.//
+
+== 34. ䷡ ==
+
+**Force, Puissance, Énergie**
+//Grande force exige contrôle et maîtrise.//
+
+== 35. ䷢ ==
+
+**Progrès, Ascension, Reconnaissance**
+//Avancée soutenue par visibilité et confiance.//
+
+== 36. ䷣ ==
+
+**Dissimulation, Ombre, Protection**
+//Cacher sa lumière dans contexte hostile.//
+
+== 37. ䷤ ==
+
+**Famille, Ordre, Structure**
+//Rôles équilibrés assurent harmonie durable.//
+
+== 38. ䷥ ==
+
+**Opposition, Différence, Dualité**
+//Contrastes persistants mais potentiellement complémentaires.//
+
+== 39. ䷦ ==
+
+**Obstacle, Blocage, Entrave**
+//Difficultés imposent réévaluation stratégique.//
+
+== 40. ䷧ ==
+
+**Libération, Résolution, Détente**
+//Tensions se dissolvent après clarification.//
+
+== 41. ䷨ ==
+
+**Diminution, Sacrifice, Équilibre**
+//Réduire excès restaure harmonie globale.//
+
+== 42. ䷩ ==
+
+**Accroissement, Expansion, Gain**
+//Croissance soutenue par partage et ouverture.//
+
+== 43. ䷪ ==
+
+**Percée, Décision, Clarté**
+//Moment décisif exige action ferme.//
+
+== 44. ䷫ ==
+
+**Rencontre, Tentation, Influence**
+//Influence soudaine pouvant déstabiliser ou séduire.//
+
+== 45. ䷬ ==
+
+**Rassemblement, Collectif, Union**
+//Regroupement autour d’un centre commun.//
+
+== 46. ䷭ ==
+
+**Ascension, Croissance, Progression**
+//Montée lente mais constante vers sommet.//
+
+== 47. ䷮ ==
+
+**Oppression, Épuisement, Limite**
+//Contraintes testent endurance et patience.//
+
+== 48. ䷯ ==
+
+**Ressource, Source, Profondeur**
+//Accès à une source durable essentielle.//
+
+== 49. ䷰ ==
+
+**Révolution, Changement, Transformation**
+//Mutation radicale remplaçant ancien système.//
+
+== 50. ䷱ ==
+
+**Chaudron, Transformation, Sagesse**
+//Alchimie intérieure produit évolution profonde.//
+
+== 51. ䷲ ==
+
+**Tonnerre, Choc, Réveil**
+//Événement soudain provoque prise de conscience.//
+
+== 52. ䷳ ==
+
+**Immobilité, Calme, Méditation**
+//Arrêt volontaire stabilise esprit.//
+
+== 53. ䷴ ==
+
+**Maturation, Développement, Progression**
+//Croissance lente menant à stabilité.//
+
+== 54. ䷵ ==
+
+**Dépendance, Union, Fragilité**
+//Position instable nécessitant adaptation prudente.//
+
+== 55. ䷶ ==
+
+**Abondance, Sommet, Intensité**
+//Apogée précédant inévitable transformation.//
+
+== 56. ䷷ ==
+
+**Voyage, Passage, Instabilité**
+//Situation temporaire demandant souplesse.//
+
+== 57. ䷸ ==
+
+**Influence, Douceur, Persuasion**
+//Action subtile transforme progressivement.//
+
+== 58. ䷹ ==
+
+**Joie, Échange, Communication**
+//Ouverture favorise harmonie relationnelle.//
+
+== 59. ䷺ ==
+
+**Dispersion, Dissolution, Flux**
+//Dissolution des blocages et rigidités.//
+
+== 60. ䷻ ==
+
+**Limite, Cadre, Mesure**
+//Les règles structurent liberté efficace.//
+
+== 61. ䷼ ==
+
+**Sincérité, Vérité, Intériorité**
+//Authenticité profonde crée confiance durable.//
+
+== 62. ䷽ ==
+
+**Détail, Prudence, Précision**
+//Attention aux petites choses essentielles.//
+
+== 63. ䷾ ==
+
+**Accomplissement, Équilibre, Fragilité**
+//Succès atteint mais instable.//
+
+== 64. ䷿ ==
+
+**Transition, Inachèvement, Mouvement**
+//Fin d’un cycle, début d’un autre.//
+
+
+
+
